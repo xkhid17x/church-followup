@@ -212,6 +212,10 @@
     border-bottom:1px solid var(--ink);padding:8px 6px;
   }
   table td{padding:9px 6px;border-bottom:1px solid var(--line);vertical-align:middle;}
+  table th.sortable{cursor:pointer;user-select:none;}
+  table th.sortable:hover{color:var(--ink);}
+  table th.sortable .sort-arrow{display:inline-block;margin-left:4px;font-size:10px;color:var(--gold-dark);}
+  .members-pagination button:disabled{opacity:.4;cursor:not-allowed;}
   table img{width:34px;height:34px;object-fit:cover;border:1px solid var(--line);}
   .del-btn{background:none;border:none;color:var(--rust);cursor:pointer;font-size:13px;font-weight:600;}
   .del-btn:hover{text-decoration:underline;}
@@ -358,6 +362,17 @@
   .fu-tl .dt{font-size:11.5px;color:var(--ink-light);}
   .fu-tl .tx{font-size:13.5px;margin-top:2px;white-space:pre-wrap;}
   .fu-face-yes{color:var(--sage);font-weight:700;} .fu-face-no{color:var(--ink-light);}
+  .fu-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px;}
+  .fu-head button{padding:9px 16px;font-size:13.5px;}
+  .fu-pick-list{max-height:46vh;overflow:auto;border:1px solid var(--line);margin-top:10px;}
+  .fu-pick{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;text-align:left;
+    background:none;border:none;border-bottom:1px solid var(--line);padding:10px 12px;cursor:pointer;font-family:'Inter',sans-serif;}
+  .fu-pick:last-child{border-bottom:none;}
+  .fu-pick:hover{background:var(--parchment);}
+  .fu-pick b{display:block;font-size:14px;color:var(--ink);font-weight:600;}
+  .fu-pick small{display:block;font-size:11.5px;color:var(--ink-light);margin-top:2px;}
+  .fu-pick .fu-seen{font-size:11.5px;color:var(--ink-light);white-space:nowrap;text-align:right;}
+  .fu-pick .fu-seen.away{color:var(--rust);font-weight:600;}
   .auth-gate{position:fixed;inset:0;background:var(--parchment);display:flex;align-items:center;justify-content:center;padding:20px;z-index:2000;overflow:auto;}
   .auth-card{width:min(400px,100%);background:#fffdf8;border:1px solid var(--line);box-shadow:0 18px 60px rgba(0,0,0,.12);padding:32px 28px;}
   .auth-card h1{font-family:'Lora',serif;font-size:26px;margin:0 0 4px;color:var(--ink);text-align:center;}
@@ -489,7 +504,10 @@
 
   <!-- FOLLOW-UP -->
   <section class="panel" id="panel-followup">
-    <h2 class="section-title">Follow-up</h2>
+    <div class="fu-head">
+      <h2 class="section-title" style="margin:0;">Follow-up</h2>
+      <button class="primary" id="fuNewBtn" type="button">+ New follow-up</button>
+    </div>
     <div class="fu-strip" id="fuStrip"></div>
     <div id="fuBody"></div>
   </section>
@@ -633,11 +651,27 @@
     </div>
     <table>
       <thead>
-        <tr><th></th><th>Name</th><th>Contact</th><th>Age Group</th><th>Regular</th><th>Invited By</th><th>Enrolled</th><th></th></tr>
+        <tr>
+          <th></th>
+          <th class="sortable" data-sort="name">Name<span class="sort-arrow"></span></th>
+          <th>Contact</th>
+          <th class="sortable" data-sort="ageGroup">Age Group<span class="sort-arrow"></span></th>
+          <th class="sortable" data-sort="regular">Regular<span class="sort-arrow"></span></th>
+          <th>Invited By</th>
+          <th>Enrolled</th>
+          <th></th>
+        </tr>
       </thead>
       <tbody id="membersTbody"></tbody>
     </table>
     <div class="empty-note" id="membersEmpty" style="display:none;">No members enrolled yet. Add people from the Enroll tab.</div>
+    <div class="members-pagination" id="membersPagination" style="display:none;align-items:center;justify-content:space-between;margin-top:14px;font-size:13px;color:var(--ink-light);">
+      <span id="membersPageInfo"></span>
+      <div style="display:flex;gap:8px;">
+        <button type="button" class="ghost" id="membersPrevBtn" style="padding:6px 14px;font-size:13px;">&laquo; Back</button>
+        <button type="button" class="ghost" id="membersNextBtn" style="padding:6px 14px;font-size:13px;">Next &raquo;</button>
+      </div>
+    </div>
     </div>
   </section>
 
@@ -787,7 +821,10 @@ const state = {
   fuQuery: '',
   fuChip: 'all',
   fuPeopleLimit: 60,
+  memberSort: { key: 'name', dir: 'asc' },
+  memberPage: 1,
 };
+const MEMBERS_PAGE_SIZE = 25;
 
 function dateKey(d){
   const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), day=String(d.getDate()).padStart(2,'0');
@@ -817,7 +854,14 @@ function switchTab(tab){
   } else {
     stopScanLoop();
   }
-  if(tab!=='members'){ stopEnrollCamera(); }
+  if(tab!=='members'){
+    stopEnrollCamera();
+    // panel-enroll and panel-bulk live outside #panel-members in the DOM,
+    // so they aren't hidden just by removing 'active' from the members
+    // panel above. Explicitly hide them or they stay visible on other tabs.
+    document.getElementById('panel-enroll')?.classList.remove('active');
+    document.getElementById('panel-bulk')?.classList.remove('active');
+  }
   if(tab==='members'){ switchMemberSubtab(state.memberSubtab); }
   if(tab==='followup'){ renderFollowup(); }
   if(tab==='reports'){ loadReportForDate(document.getElementById('reportDate').value); }
@@ -1784,8 +1828,35 @@ async function runBulkEnrollment(){
 }
 
 // ---------- Members ----------
-document.getElementById('memberSearch').addEventListener('input', renderMembers);
-document.getElementById('memberFaceFilter')?.addEventListener('change', renderMembers);
+document.getElementById('memberSearch').addEventListener('input', ()=>{ state.memberPage = 1; renderMembers(); });
+document.getElementById('memberFaceFilter')?.addEventListener('change', ()=>{ state.memberPage = 1; renderMembers(); });
+
+document.querySelectorAll('table th.sortable').forEach(th=>{
+  th.addEventListener('click', ()=>{
+    const key = th.dataset.sort;
+    if(state.memberSort.key === key){
+      state.memberSort.dir = state.memberSort.dir === 'asc' ? 'desc' : 'asc';
+    } else {
+      state.memberSort = { key, dir: 'asc' };
+    }
+    state.memberPage = 1;
+    renderMembers();
+  });
+});
+
+document.getElementById('membersPrevBtn').addEventListener('click', ()=>{
+  if(state.memberPage > 1){ state.memberPage--; renderMembers(); }
+});
+document.getElementById('membersNextBtn').addEventListener('click', ()=>{
+  state.memberPage++; renderMembers();
+});
+
+function memberSortValue(m, key){
+  if(key === 'ageGroup') return String(m.ageGroup || m.group || '').toLowerCase();
+  if(key === 'regular') return String(m.regular || 'Yes').toLowerCase();
+  return String(m.name || '').toLowerCase();
+}
+
 function renderMembers(){
   const q = document.getElementById('memberSearch').value.trim().toLowerCase();
   const faceFilter = document.getElementById('memberFaceFilter')?.value || 'all';
@@ -1793,9 +1864,43 @@ function renderMembers(){
   let filtered = state.members.filter(m=> (m.name||'').toLowerCase().includes(q));
   if(faceFilter==='enrolled') filtered = filtered.filter(m=>m.descriptor);
   if(faceFilter==='not') filtered = filtered.filter(m=>!m.descriptor);
-  filtered = filtered.slice().sort((a,b)=>String(a.name||'').localeCompare(String(b.name||'')));
+
+  const { key: sortKey, dir: sortDir } = state.memberSort;
+  filtered = filtered.slice().sort((a,b)=>{
+    const cmp = memberSortValue(a, sortKey).localeCompare(memberSortValue(b, sortKey));
+    return sortDir === 'desc' ? -cmp : cmp;
+  });
+
+  document.querySelectorAll('table th.sortable').forEach(th=>{
+    const arrow = th.querySelector('.sort-arrow');
+    if(th.dataset.sort === sortKey){
+      arrow.textContent = sortDir === 'asc' ? '\u25B2' : '\u25BC';
+    } else {
+      arrow.textContent = '';
+    }
+  });
+
+  const totalCount = filtered.length;
+  const totalPages = Math.max(1, Math.ceil(totalCount / MEMBERS_PAGE_SIZE));
+  if(state.memberPage > totalPages) state.memberPage = totalPages;
+  if(state.memberPage < 1) state.memberPage = 1;
+  const startIdx = (state.memberPage - 1) * MEMBERS_PAGE_SIZE;
+  const pageItems = filtered.slice(startIdx, startIdx + MEMBERS_PAGE_SIZE);
+
+  const paginationEl = document.getElementById('membersPagination');
+  if(totalCount > 0){
+    paginationEl.style.display = 'flex';
+    const endIdx = Math.min(startIdx + MEMBERS_PAGE_SIZE, totalCount);
+    document.getElementById('membersPageInfo').textContent =
+      `Showing ${startIdx+1}\u2013${endIdx} of ${totalCount}`;
+    document.getElementById('membersPrevBtn').disabled = state.memberPage <= 1;
+    document.getElementById('membersNextBtn').disabled = state.memberPage >= totalPages;
+  } else {
+    paginationEl.style.display = 'none';
+  }
+
   document.getElementById('membersEmpty').style.display = state.members.length ? 'none':'block';
-  tbody.innerHTML = filtered.map(m=>`
+  tbody.innerHTML = pageItems.map(m=>`
     <tr>
       <td>${m.thumbnail ? `<img src="${m.thumbnail}" alt=""/>` : `<span class="fu-face-no" style="font-size:11px;">No face</span>`}</td>
       <td>${escapeHtml(m.name||'')}</td>
@@ -2363,9 +2468,18 @@ function fuWeekStart(iso){ const d=new Date(iso+'T00:00:00'); const off=(d.getDa
   return new Date(d.getTime()-d.getTimezoneOffset()*6e4).toISOString().slice(0,10); }
 
 function fuRec(id){ return state.contacts[id] || null; }
+// Every face check-in writes an entry with method 'Check-in'. Those are
+// attendance records, not follow-ups — nobody reached out to that person.
+// Counting them as contacts made any regular attendee look like someone
+// who had been followed up and then returned, so they all landed in
+// "Came back" after simply scanning their face. Follow-up state is driven
+// by fuContacts (real outreach only); fuEntries keeps everything for the
+// person timeline, where attendance history is worth seeing.
+function fuIsContact(e){ return !!e && e.method !== 'Check-in'; }
 function fuEntries(id){ const r=fuRec(id); return r && r.entries ? r.entries.slice().sort((a,b)=>a.date<b.date?-1:1) : []; }
-function fuLastEntry(id){ const e=fuEntries(id); return e.length? e[e.length-1] : null; }
-function fuNextDue(id){ const e=fuEntries(id).map(x=>x.next).filter(Boolean).sort(); return e.length? e[e.length-1]:null; }
+function fuContacts(id){ return fuEntries(id).filter(fuIsContact); }
+function fuLastEntry(id){ const e=fuContacts(id); return e.length? e[e.length-1] : null; }
+function fuNextDue(id){ const e=fuContacts(id).map(x=>x.next).filter(Boolean).sort(); return e.length? e[e.length-1]:null; }
 function fuBucket(id){
   const r=fuRec(id), last=fuLastEntry(id);
   if(!last) return 'none';
@@ -2379,7 +2493,7 @@ function fuIsDue(id){
   return fuBucket(id) !== 'back' || (fuRec(id).lastAttended < n);
 }
 function fuIntermittent(id){
-  const e=fuEntries(id), r=fuRec(id);
+  const e=fuContacts(id), r=fuRec(id);
   return e.length>=2 && r && r.lastAttended;
 }
 function fuActiveMembers(){ return state.members; }
@@ -2473,11 +2587,20 @@ function fuOpenPerson(id){
   const sub = [m.ageGroup||m.group, m.role, m.area].filter(Boolean).join(' · ') || 'No group listed';
   const face = m.descriptor ? '<span class="fu-face-yes">Face on file</span>' : '<span class="fu-face-no">No face enrolled</span>';
   let tl='';
-  if(r && r.lastAttended) tl += '<div class="it att"><div class="dt">'+fuFmtFull(r.lastAttended)+'</div><div class="tx">Came to church</div></div>';
-  tl += es.map(e=>'<div class="it'+(e.replied?' yes':'')+'"><div class="dt">'+fuFmtFull(e.date)+' · '+escapeHtml(e.method)
-    +(e.replied?' · replied':' · no reply')+(e.next?' · next '+fuFmt(e.next):'')+'</div>'
-    + (e.reply?'<div class="tx">'+escapeHtml(e.reply)+'</div>':'')
-    + (e.prayer?'<div class="fu-pray">Prayer: '+escapeHtml(e.prayer)+'</div>':'')+'</div>').join('');
+  // Only add a standalone "Came to church" line when that visit was marked
+  // by hand — a scanned visit already appears as its own timeline entry.
+  const attLogged = r && r.lastAttended && es.some(e=>!fuIsContact(e) && e.date === r.lastAttended);
+  if(r && r.lastAttended && !attLogged) tl += '<div class="it att"><div class="dt">'+fuFmtFull(r.lastAttended)+'</div><div class="tx">Came to church</div></div>';
+  tl += es.map(e=>{
+    // A check-in is attendance, not outreach — show it as such, with no
+    // "replied / no reply" wording, which only makes sense for a contact.
+    if(!fuIsContact(e)) return '<div class="it att"><div class="dt">'+fuFmtFull(e.date)
+      +'</div><div class="tx">Scanned in at church</div></div>';
+    return '<div class="it'+(e.replied?' yes':'')+'"><div class="dt">'+fuFmtFull(e.date)+' · '+escapeHtml(e.method)
+      +(e.replied?' · replied':' · no reply')+(e.next?' · next '+fuFmt(e.next):'')+'</div>'
+      + (e.reply?'<div class="tx">'+escapeHtml(e.reply)+'</div>':'')
+      + (e.prayer?'<div class="fu-pray">Prayer: '+escapeHtml(e.prayer)+'</div>':'')+'</div>';
+  }).join('');
   if(!tl) tl = '<div class="it"><div class="tx" style="color:var(--ink-light)">No follow-up logged yet.</div></div>';
   fuOpenSheet('<h3>'+escapeHtml(m.name)+'</h3><div class="msg" style="border:none;background:none;padding:0;margin:-10px 0 14px;">'
     + escapeHtml(sub) + ' · ' + face + '</div>'
@@ -2525,6 +2648,57 @@ function fuOpenLog(id){
   });
 }
 
+// Start a follow-up for anyone on the roster, not just people already in a
+// follow-up bucket. Sorted longest-absent first so the people you did not
+// see on Sunday are at the top.
+function fuOpenPicker(){
+  const rows = state.members.map(m=>{
+    const r = fuRec(m.id);
+    const last = r && r.lastAttended ? r.lastAttended : null;
+    return { m, last, days: last ? fuDaysBetween(last, todayISO()) : Infinity };
+  }).sort((a,b)=>{
+    if(a.days !== b.days) return b.days - a.days;
+    return String(a.m.name||'').localeCompare(String(b.m.name||''));
+  });
+
+  fuOpenSheet('<h3>New follow-up</h3>'
+    + '<div class="msg" style="border:none;background:none;padding:0;margin:-10px 0 12px;">'
+    + 'Pick anyone on the roster. Longest away is listed first.</div>'
+    + '<div class="field" style="margin:0;"><input type="text" id="fuPickSearch" placeholder="Search by name…" '
+    + 'autocomplete="off" style="width:100%;padding:9px 10px;border:1px solid var(--line);font-family:inherit;font-size:14.5px;"></div>'
+    + '<div class="fu-pick-list" id="fuPickList"></div>'
+    + '<div class="modal-actions"><button class="ghost" id="fuPickCancel">Cancel</button></div>');
+
+  const listEl = document.getElementById('fuPickList');
+
+  function draw(q){
+    const term = (q||'').trim().toLowerCase();
+    const shown = rows.filter(x=>String(x.m.name||'').toLowerCase().includes(term)).slice(0, 80);
+    if(!shown.length){ listEl.innerHTML = '<div class="fu-empty" style="padding:14px;">No one matches that name.</div>'; return; }
+    listEl.innerHTML = shown.map(x=>{
+      const sub = [x.m.ageGroup||x.m.group, x.m.area].filter(Boolean).join(' · ') || 'No group listed';
+      const seen = x.last ? 'last seen '+fuFmt(x.last) : 'never recorded';
+      const away = x.days === Infinity || x.days >= 14 ? ' away' : '';
+      return '<button type="button" class="fu-pick" data-fu-pick="'+x.m.id+'">'
+        + '<span><b>'+escapeHtml(x.m.name||'')+'</b><small>'+escapeHtml(sub)+'</small></span>'
+        + '<span class="fu-seen'+away+'">'+escapeHtml(seen)+'</span></button>';
+    }).join('')
+      + (rows.filter(x=>String(x.m.name||'').toLowerCase().includes(term)).length > 80
+        ? '<div class="fu-empty" style="padding:10px;">More matches — keep typing to narrow it down.</div>' : '');
+    listEl.querySelectorAll('[data-fu-pick]').forEach(b=>{
+      b.addEventListener('click', ()=>{ const id=b.dataset.fuPick; fuCloseSheet(); fuOpenLog(id); });
+    });
+  }
+
+  draw('');
+  const search = document.getElementById('fuPickSearch');
+  search.addEventListener('input', ()=>draw(search.value));
+  search.focus();
+  document.getElementById('fuPickCancel').addEventListener('click', fuCloseSheet);
+}
+
+document.getElementById('fuNewBtn').addEventListener('click', fuOpenPicker);
+
 function fuLastSunday(){ const d=new Date(); d.setDate(d.getDate()-d.getDay());
   return new Date(d.getTime()-d.getTimezoneOffset()*6e4).toISOString().slice(0,10); }
 function fuOpenCame(id){
@@ -2546,7 +2720,7 @@ function exportFollowupCsv(){
   const rows=[['Name','Group','Area','Date','How','Replied','What they said','Prayer request','Next follow-up','Last attended']];
   for(const m of state.members){
     const r = fuRec(m.id); if(!r) continue;
-    for(const e of fuEntries(m.id))
+    for(const e of fuContacts(m.id))
       rows.push([m.name, m.ageGroup||m.group||'', m.area||'', e.date, e.method, e.replied?'Yes':'No', e.reply||'', e.prayer||'', e.next||'', r.lastAttended||'']);
   }
   const csv = rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\\r\\n');
