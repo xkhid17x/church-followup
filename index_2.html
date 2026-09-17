@@ -248,7 +248,6 @@
   .bulk-options{display:flex;gap:14px;flex-wrap:wrap;align-items:end;margin-bottom:18px;}
   .bulk-options .field{margin:0;min-width:160px;}
   .bulk-actions{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
-  .backup-panel-note{max-width:760px;line-height:1.6;}
   .bulk-progress-wrap{display:none;margin:12px 0 18px;}
   .bulk-progress{height:10px;background:var(--parchment-dark);border:1px solid var(--line);overflow:hidden;}
   .bulk-progress > div{height:100%;width:0%;background:var(--gold);transition:width .15s;}
@@ -308,7 +307,6 @@
   .subpanel.active{display:block;}
   .subsection-title{font-family:'Lora',serif;font-size:16px;font-weight:600;color:var(--ink);margin:36px 0 12px;
     border-top:1px solid var(--line);padding-top:22px;}
-  .backup-block .msg{max-width:640px;}
 
   /* Follow-up */
   .fu-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:0 0 22px;}
@@ -364,6 +362,7 @@
   .fu-face-yes{color:var(--sage);font-weight:700;} .fu-face-no{color:var(--ink-light);}
   .fu-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px;}
   .fu-head button{padding:9px 16px;font-size:13.5px;}
+  .report-section{border:1px solid var(--line);background:#fffdf8;padding:16px;margin:0 0 24px;}
   .fu-report{border:1px solid var(--line);background:#fffdf8;padding:14px;margin:0 0 24px;}
   .fu-report-head{display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:12px;}
   .fu-report-periods{display:flex;gap:6px;flex-wrap:wrap;}
@@ -374,6 +373,20 @@
   .fu-report-stat span{font-size:11px;color:var(--ink-light);}
   .fu-report-table{border:1px solid var(--line);overflow:auto;}
   .fu-report-table table{min-width:760px;margin:0;}
+  .fu-bulkbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:0 0 14px;padding:10px 12px;border:1px solid var(--line);background:var(--parchment);}
+  .fu-bulkbar .fu-selected-count{font-size:13px;color:var(--ink-light);}
+  .fu-bulk-actions{display:flex;gap:8px;flex-wrap:wrap;}
+  .fu-table-wrap{border:1px solid var(--line);overflow:auto;background:#fffdf8;}
+  .fu-table{min-width:780px;margin:0;}
+  .fu-table th,.fu-table td{padding:10px 11px;border-bottom:1px solid var(--line);font-size:12.5px;vertical-align:middle;}
+  .fu-table th{font-size:11.5px;text-transform:uppercase;letter-spacing:.03em;color:var(--ink-light);background:var(--parchment);white-space:nowrap;}
+  .fu-table tr:last-child td{border-bottom:none;}
+  .fu-table .fu-check{width:36px;text-align:center;}
+  .fu-table .fu-check input{width:16px;height:16px;accent-color:var(--ink);cursor:pointer;}
+  .fu-table .fu-name{font-weight:600;color:var(--ink);background:none;border:0;padding:0;cursor:pointer;font:inherit;text-align:left;}
+  .fu-table .fu-name:hover{text-decoration:underline;}
+  .fu-status{font-size:11.5px;font-weight:600;white-space:nowrap;}
+  .fu-status.due{color:var(--rust);} .fu-status.wait{color:var(--gold-dark);} .fu-status.replied{color:var(--ink);} .fu-status.back{color:var(--sage);}
   .fu-pagination{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px;font-size:12.5px;color:var(--ink-light);}
   .fu-pagination button{padding:6px 12px;font-size:12.5px;}
   .fu-entry-actions{float:right;margin-left:10px;}
@@ -525,37 +538,6 @@
       <button class="primary" id="fuNewBtn" type="button">+ New follow-up</button>
     </div>
     <div class="fu-strip" id="fuStrip"></div>
-    <div class="fu-report">
-      <div class="fu-report-head">
-        <div>
-          <h3 style="font-family:'Lora',serif;color:var(--ink);font-size:16px;margin:0 0 3px;">Follow-up report</h3>
-          <div id="fuReportLabel" style="font-size:12.5px;color:var(--ink-light);"></div>
-        </div>
-        <div class="fu-report-periods">
-          <button type="button" class="ghost" id="fuReportWeekBtn">Weekly</button>
-          <button type="button" class="ghost" id="fuReportMonthBtn">Monthly</button>
-          <button type="button" class="ghost" id="fuReportYearBtn">Yearly</button>
-        </div>
-        <div class="field" style="margin:0;">
-          <label for="fuReportDate">Report date</label>
-          <input type="date" id="fuReportDate">
-        </div>
-      </div>
-      <div class="fu-report-summary" id="fuReportSummary"></div>
-      <div class="fu-report-table">
-        <table>
-          <thead><tr><th>Date</th><th>Name</th><th>Group</th><th>How</th><th>Reply</th><th>Prayer request</th><th>Next follow-up</th></tr></thead>
-          <tbody id="fuReportTbody"></tbody>
-        </table>
-      </div>
-      <div class="fu-pagination" id="fuReportPagination" style="display:none;">
-        <span id="fuReportPageInfo"></span>
-        <div style="display:flex;gap:8px;">
-          <button type="button" class="ghost" id="fuReportPrevBtn">&laquo; Back</button>
-          <button type="button" class="ghost" id="fuReportNextBtn">Next &raquo;</button>
-        </div>
-      </div>
-    </div>
     <div id="fuBody"></div>
   </section>
 
@@ -694,7 +676,6 @@
     </div>
     <div class="bulk-actions" style="margin-bottom:16px;">
       <button class="ghost" id="exportMembersBtn">Export Members CSV</button>
-      <button class="ghost" id="exportFollowupBtn2">Export Follow-up CSV</button>
     </div>
     <table>
       <thead>
@@ -775,33 +756,61 @@
 
   <!-- REPORTS -->
   <section class="panel" id="panel-reports">
-    <h2 class="section-title">Attendance Reports</h2>
-    <div class="reports-top">
-      <div class="field" style="margin:0;">
-        <label for="reportDate">Date</label>
-        <input type="date" id="reportDate" />
+    <h2 class="section-title">Reports</h2>
+
+    <div class="report-section">
+      <h3 class="subsection-title">Attendance Report</h3>
+      <div class="reports-top">
+        <div class="field" style="margin:0;">
+          <label for="reportDate">Date</label>
+          <input type="date" id="reportDate" />
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="ghost" id="exportCsvBtn">Export Attendance CSV</button>
+          <button class="ghost" id="resetDateBtn">Reset Selected Date</button>
+        </div>
       </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;">
-        <button class="ghost" id="exportCsvBtn">Export CSV</button>
-        <button class="ghost" id="resetDateBtn">Reset Selected Date</button>
+      <div class="stat-line" id="reportStat"></div>
+      <div style="overflow:auto;">
+        <table>
+          <thead><tr><th></th><th>Name</th><th>Contact</th><th>Address</th><th>Invited By</th><th>Age Group</th><th>Regular</th><th>Service</th><th>Time</th><th>Action</th></tr></thead>
+          <tbody id="reportTbody"></tbody>
+        </table>
       </div>
+      <div class="empty-note" id="reportEmpty" style="display:none;"></div>
     </div>
-    <div class="stat-line" id="reportStat"></div>
-    <table>
-      <thead><tr><th></th><th>Name</th><th>Contact</th><th>Address</th><th>Invited By</th><th>Age Group</th><th>Regular</th><th>Service</th><th>Time</th><th>Action</th></tr></thead>
-      <tbody id="reportTbody"></tbody>
-    </table>
-    <div class="empty-note" id="reportEmpty" style="display:none;"></div>
-    <div class="backup-block">
-    <h3 class="subsection-title">Backup &amp; Restore</h3>
-    <div class="msg">Your members, enrolled faces, and attendance records are stored in this browser. Use <strong>Export Full Backup</strong> regularly so you can restore everything if Chrome data is cleared, the computer changes, or the browser profile is lost.</div>
-    <div class="bulk-actions">
-      <button class="primary" id="exportBackupBtn">Export Full Backup</button>
-      <button class="ghost" id="importBackupBtn">Import Backup</button>
-      <input type="file" id="importBackupInput" accept="application/json,.json" style="display:none;">
-    </div>
-    <div id="backupMsg"></div>
-    <div class="empty-note">A full backup includes member profiles, enrolled face descriptors and thumbnails, plus all saved attendance history.</div>
+
+    <div class="report-section fu-report">
+      <div class="fu-report-head">
+        <div>
+          <h3 class="subsection-title" style="margin:0 0 3px;">Follow-up Report</h3>
+          <div id="fuReportLabel" style="font-size:12.5px;color:var(--ink-light);"></div>
+        </div>
+        <div class="fu-report-periods">
+          <button type="button" class="ghost" id="fuReportWeekBtn">Weekly</button>
+          <button type="button" class="ghost" id="fuReportMonthBtn">Monthly</button>
+          <button type="button" class="ghost" id="fuReportYearBtn">Yearly</button>
+        </div>
+        <div class="field" style="margin:0;">
+          <label for="fuReportDate">Report date</label>
+          <input type="date" id="fuReportDate">
+        </div>
+        <button type="button" class="ghost" id="exportFollowupReportBtn">Export Follow-up CSV</button>
+      </div>
+      <div class="fu-report-summary" id="fuReportSummary"></div>
+      <div class="fu-report-table">
+        <table>
+          <thead><tr><th>Date</th><th>Name</th><th>Group</th><th>How</th><th>Reply</th><th>Prayer request</th><th>Next follow-up</th></tr></thead>
+          <tbody id="fuReportTbody"></tbody>
+        </table>
+      </div>
+      <div class="fu-pagination" id="fuReportPagination" style="display:none;">
+        <span id="fuReportPageInfo"></span>
+        <div style="display:flex;gap:8px;">
+          <button type="button" class="ghost" id="fuReportPrevBtn">&laquo; Back</button>
+          <button type="button" class="ghost" id="fuReportNextBtn">Next &raquo;</button>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -833,9 +842,8 @@ const CHECKIN_DETECT_OPTS = () => {
 const MATCH_THRESHOLD = 0.5;
 
 // ---------- Supabase config ----------
-// Paste your Supabase project's URL and anon public key here (Project
-// Settings -> API). Until both are filled in, the app saves to this
-// browser's local storage only (works, but does not sync between devices).
+// Supabase is required for all church data. Members, enrolled faces,
+// attendance, and follow-up records are stored in the Supabase kv table.
 const SUPABASE_URL = "https://hyemvrtfkmpaffnztelo.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_cIvR_HclRiLTJ2B3kGXXtA_FtqdJ2Gw";
 
@@ -870,6 +878,7 @@ const state = {
   fuPeopleLimit: 60,
   fuPageSize: 25,
   fuPages: { due:1, noreply:1, replied:1, back:1 },
+  fuSelected: new Set(),
   fuReportPeriod: 'week',
   fuReportPage: 1,
   memberSort: { key: 'name', dir: 'asc' },
@@ -915,7 +924,7 @@ function switchTab(tab){
   }
   if(tab==='members'){ switchMemberSubtab(state.memberSubtab); }
   if(tab==='followup'){ renderFollowup(); }
-  if(tab==='reports'){ loadReportForDate(document.getElementById('reportDate').value); }
+  if(tab==='reports'){ loadReportForDate(document.getElementById('reportDate').value); renderFollowupReport(); }
 }
 
 function switchMemberSubtab(sub){
@@ -947,44 +956,33 @@ function populateNameDatalist(){
 }
 
 // ---------- Storage ----------
-// Primary store: Supabase (shared, syncs across devices) when SUPABASE_URL /
-// SUPABASE_ANON_KEY above are filled in and the `kv` table exists. Falls
-// back to this browser's localStorage otherwise, or if a Supabase call
-// fails (e.g. offline) — so the app keeps working either way.
+// Core church data is stored in Supabase only. Browser localStorage is not used
+// for members, enrolled faces, attendance, or follow-up records. Local storage
+// may still be used elsewhere for non-data preferences such as camera settings.
 const storageApi = {
   async get(key){
-    if (supa) {
-      try {
-        const { data, error } = await supa.from('kv').select('value').eq('key', key).maybeSingle();
-        if (!error) return data ? { value: JSON.stringify(data.value) } : null;
-        console.warn('Supabase get failed, using local cache:', error.message);
-      } catch(e) { console.warn('Supabase get error, using local cache:', e); }
-    }
-    const value = localStorage.getItem('church-attendance:' + key);
-    return value === null ? null : { value };
+    if (!supa) throw new Error('Supabase is not configured. Church data cannot be loaded.');
+    const { data, error } = await supa.from('kv').select('value').eq('key', key).maybeSingle();
+    if (error) throw new Error('Supabase load failed: ' + error.message);
+    return data ? { value: JSON.stringify(data.value) } : null;
   },
   async set(key, value){
-    localStorage.setItem('church-attendance:' + key, value);
-    if (supa) {
-      try {
-        let parsed;
-        try { parsed = JSON.parse(value); } catch(e) { parsed = value; }
-        const { error } = await supa.from('kv').upsert({ key, value: parsed, updated_at: new Date().toISOString() });
-        if (error) { console.warn('Supabase save failed, kept locally only:', error.message); return null; }
-      } catch(e) { console.warn('Supabase save error, kept locally only:', e); return null; }
-    }
-    return { value };
+    if (!supa) throw new Error('Supabase is not configured. Church data cannot be saved.');
+    let parsed;
+    try { parsed = JSON.parse(value); } catch(e) { parsed = value; }
+    const { data, error } = await supa.from('kv').upsert({ key, value: parsed, updated_at: new Date().toISOString() }, { onConflict:'key' }).select('value').single();
+    if (error) throw new Error('Supabase save failed: ' + error.message);
+    return { value: JSON.stringify(data.value) };
   },
   async remove(key){
-    localStorage.removeItem('church-attendance:' + key);
-    if (supa) {
-      try { await supa.from('kv').delete().eq('key', key); }
-      catch(e) { console.warn('Supabase delete failed:', e); }
-    }
+    if (!supa) throw new Error('Supabase is not configured. Church data cannot be changed.');
+    const { error } = await supa.from('kv').delete().eq('key', key);
+    if (error) throw new Error('Supabase delete failed: ' + error.message);
     return true;
   }
 };
 const usingSharedStorage = !!supa;
+if(!supa){ console.error('Supabase is not configured. Core church data requires Supabase.'); }
 
 function rebuildMatcher(){
   if(!state.modelsLoaded){ return; }
@@ -2330,7 +2328,7 @@ function csvCell(value){
 }
 function exportMembersCsv(){
   if(state.members.length===0){
-    showBackupMessage('No members to export.', 'err');
+    showToast('No members to export.');
     return;
   }
   const headers = ['Full Name','Contact Number','Address','Invited By','Age Group','Regular','Enrolled Date'];
@@ -2341,128 +2339,6 @@ function exportMembersCsv(){
   });
   downloadText(csv, 'members-' + dateKey(new Date()) + '.csv', 'text/csv;charset=utf-8');
 }
-
-// ---------- Full backup / restore ----------
-async function getAllAttendanceForBackup(){
-  const indexRes = await storageApi.get('attendanceDates');
-  let dates = [];
-  try { dates = indexRes && indexRes.value ? JSON.parse(indexRes.value) : []; } catch(e) {}
-  const attendance = {};
-  for(const dKey of dates){
-    attendance[dKey] = await loadAttendance(dKey);
-  }
-  // Also scan normal localStorage in case the date index is missing or incomplete.
-  const prefix = 'church-attendance:attendance:';
-  for(let i=0; i<localStorage.length; i++){
-    const k = localStorage.key(i);
-    if(k && k.startsWith(prefix)){
-      const dKey = k.slice(prefix.length);
-      if(!Object.prototype.hasOwnProperty.call(attendance,dKey)){
-        try { attendance[dKey] = JSON.parse(localStorage.getItem(k) || '[]'); } catch(e) {}
-      }
-    }
-  }
-  return attendance;
-}
-
-async function exportFullBackup(){
-  try{
-    const attendance = await getAllAttendanceForBackup();
-    const backup = {
-      app: 'Congregation Check-In',
-      backupVersion: 1,
-      exportedAt: new Date().toISOString(),
-      members: state.members,
-      followupContacts: state.contacts,
-      attendance,
-    };
-    const json = JSON.stringify(backup);
-    downloadText(json, 'church-attendance-backup-' + dateKey(new Date()) + '.json', 'application/json');
-    showBackupMessage('Full backup exported successfully.', 'ok');
-  }catch(e){
-    console.error('Backup export failed:', e);
-    showBackupMessage('Could not create the backup: ' + (e.message || String(e)), 'err');
-  }
-}
-
-async function importFullBackup(file){
-  if(!file) return;
-  try{
-    const text = await file.text();
-    const backup = JSON.parse(text);
-    if(!backup || backup.app !== 'Congregation Check-In' || !Array.isArray(backup.members) || !backup.attendance || typeof backup.attendance !== 'object'){
-      throw new Error('This file is not a valid Church Attendance backup.');
-    }
-    const memberCount = backup.members.length;
-    const dateCount = Object.keys(backup.attendance).length;
-    if(!confirm(`Restore this backup?\n\n${memberCount} member(s) and attendance from ${dateCount} date(s) will replace the current data in this browser.\n\nMake sure you have exported your current data first if you need it.`)) return;
-
-    state.members = backup.members.map(m => ({
-      ...m,
-      ageGroup: m.ageGroup || m.group || 'Kids',
-      contact: m.contact || '',
-      address: m.address || '',
-      invitedBy: m.invitedBy || '',
-      regular: m.regular || 'Yes'
-    }));
-    if(!(await saveMembers())) throw new Error('Could not save member data.');
-    state.contacts = (backup.followupContacts && typeof backup.followupContacts === 'object') ? backup.followupContacts : {};
-    await saveFollowup();
-
-    // Clear existing attendance stored in the normal localStorage fallback.
-    const prefix = 'church-attendance:attendance:';
-    const oldKeys = [];
-    for(let i=0; i<localStorage.length; i++){
-      const k = localStorage.key(i);
-      if(k && k.startsWith(prefix)) oldKeys.push(k);
-    }
-    oldKeys.forEach(k => localStorage.removeItem(k));
-
-    const dates = Object.keys(backup.attendance).filter(Boolean).sort();
-    for(const dKey of dates){
-      await storageApi.set('attendance:'+dKey, JSON.stringify(Array.isArray(backup.attendance[dKey]) ? backup.attendance[dKey] : []));
-    }
-    await storageApi.set('attendanceDates', JSON.stringify(dates));
-
-    state.attendanceToday = await loadAttendance(state.todayKey);
-    rebuildMatcher();
-    renderMembers();
-    renderTodayList();
-    await loadReportForDate(document.getElementById('reportDate').value);
-    showBackupMessage('Backup restored successfully. ' + memberCount + ' members and ' + dateCount + ' attendance date(s) loaded.', 'ok');
-  }catch(e){
-    console.error('Backup import failed:', e);
-    showBackupMessage('Import failed: ' + (e.message || String(e)), 'err');
-  }
-}
-
-function downloadText(text, filename, type){
-  const blob = new Blob([text], {type});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  setTimeout(()=>URL.revokeObjectURL(url), 1000);
-}
-function showBackupMessage(text, kind=''){
-  const el = document.getElementById('backupMsg');
-  if(!el) return;
-  el.innerHTML = '<div class="msg '+(kind ? kind : '')+'">'+escapeHtml(text)+'</div>';
-  setTimeout(()=>{ if(el) el.innerHTML=''; }, 5000);
-}
-
-document.getElementById('exportMembersBtn').addEventListener('click', exportMembersCsv);
-document.getElementById('exportFollowupBtn2').addEventListener('click', exportFollowupCsv);
-document.getElementById('exportBackupBtn').addEventListener('click', exportFullBackup);
-document.getElementById('importBackupBtn').addEventListener('click', ()=>document.getElementById('importBackupInput').click());
-document.getElementById('importBackupInput').addEventListener('change', async e=>{
-  const file = e.target.files && e.target.files[0];
-  e.target.value = '';
-  await importFullBackup(file);
-});
 
 // ---------- Attendance reset ----------
 async function resetSelectedDate(){
@@ -2488,6 +2364,7 @@ async function resetSelectedDate(){
 }
 
 document.getElementById('resetDateBtn').addEventListener('click', resetSelectedDate);
+document.getElementById('exportFollowupReportBtn').addEventListener('click', exportFollowupReportCsv);
 
 function escapeHtml(s){
   return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -2606,35 +2483,93 @@ function fuPaginationHtml(key,p){
     +'<button type="button" class="ghost" data-fu-prev="'+key+'" '+(p.page<=1?'disabled':'')+'>&laquo; Back</button>'
     +'<button type="button" class="ghost" data-fu-next="'+key+'" '+(p.page>=p.totalPages?'disabled':'')+'>Next &raquo;</button></div></div>';
 }
+function fuStatusLabel(m){
+  const b=fuBucket(m.id), last=fuLastEntry(m.id), r=fuRec(m.id);
+  if(b==='back') return '<span class="fu-status back">Came back</span>';
+  if(b==='replied') return '<span class="fu-status replied">Replied, not back</span>';
+  if(b==='noreply') return '<span class="fu-status wait">Waiting on a reply</span>';
+  if(fuIsDue(m.id)) return '<span class="fu-status due">Due</span>';
+  return last ? '<span class="fu-status">Follow-up logged</span>' : '<span style="color:var(--ink-light)">Not contacted</span>';
+}
+function fuFollowupStatus(m){
+  const b=fuBucket(m.id);
+  if(b==='back') return 'back';
+  if(b==='replied') return 'replied';
+  if(b==='noreply') return 'noreply';
+  if(fuIsDue(m.id)) return 'due';
+  return 'other';
+}
+function fuFollowupList(){
+  return fuActiveMembers().filter(m=>{
+    const r=fuRec(m.id);
+    return !!(fuLastEntry(m.id) || (r && r.lastAttended));
+  }).sort((a,b)=>{
+    const rank={back:3,replied:2,noreply:1,due:0,other:-1};
+    const ra=rank[fuFollowupStatus(a)], rb=rank[fuFollowupStatus(b)];
+    if(ra!==rb) return rb-ra;
+    const xa=fuLastEntry(a.id), xb=fuLastEntry(b.id);
+    return (xa&&xb) ? (xa.date<xb.date?1:-1) : 0;
+  });
+}
 function fuSectionPaged(title,hint,cls,key,list,emptyMsg){
   const p=fuPaginate(key,list);
   let h='<div class="fu-sec"><div class="fu-sec-h"><h3>'+title+'</h3><p>'+hint+'</p></div><div class="fu-rule '+cls+'"></div>';
-  h += p.total ? p.items.map(m=>fuCard(m,key==='due'?'due '+fuFmt(fuNextDue(m.id)):key==='back'?'came '+fuFmt(fuRec(m.id).lastAttended):'')).join('') : '<div class="fu-empty">'+emptyMsg+'</div>';
-  h += fuPaginationHtml(key,p);
-  return h+'</div>';
+  if(!p.total) return h+'<div class="fu-empty">'+emptyMsg+'</div></div>';
+  const pageIds=p.items.map(m=>String(m.id));
+  const allPageSelected=pageIds.length>0 && pageIds.every(id=>state.fuSelected.has(id));
+  h+='<div class="fu-table-wrap"><table class="fu-table"><thead><tr>'
+    +'<th class="fu-check"><input type="checkbox" data-fu-select-page="all" '+(allPageSelected?'checked':'')+' aria-label="Select all on this page"></th>'
+    +'<th>Name</th><th>Group</th><th>Last follow-up</th><th>Status</th><th>Last attended</th></tr></thead><tbody>';
+  h+=p.items.map(m=>{
+    const r=fuRec(m.id), last=fuLastEntry(m.id), checked=state.fuSelected.has(String(m.id))?' checked':'';
+    return '<tr><td class="fu-check"><input type="checkbox" data-fu-select="'+escapeHtml(String(m.id))+'"'+checked+' aria-label="Select '+escapeHtml(m.name||'member')+'"></td>'
+      +'<td><button type="button" class="fu-name" data-fu-person="'+escapeHtml(String(m.id))+'">'+escapeHtml(m.name||'')+'</button></td>'
+      +'<td>'+escapeHtml(m.ageGroup||m.group||'')+'</td><td>'+escapeHtml(last?fuFmtFull(last.date):'Not contacted yet')+'</td>'
+      +'<td>'+fuStatusLabel(m)+'</td><td>'+escapeHtml(r&&r.lastAttended?fuFmtFull(r.lastAttended):'—')+'</td></tr>';
+  }).join('');
+  return h+'</tbody></table></div>'+fuPaginationHtml(key,p)+'</div>';
+}
+function fuSelectedIds(){ return Array.from(state.fuSelected).filter(id=>memberById(id)).map(String); }
+function fuUpdateBulkBar(){
+  const bar=document.getElementById('fuBulkBar'); if(!bar)return; const ids=fuSelectedIds();
+  bar.style.display=ids.length?'flex':'none'; const count=document.getElementById('fuSelectedCount'); if(count)count.textContent=ids.length+' selected';
+}
+function fuBindSelection(body){
+  body.querySelectorAll('[data-fu-select]').forEach(cb=>cb.addEventListener('change',()=>{
+    const id=String(cb.dataset.fuSelect); if(cb.checked)state.fuSelected.add(id);else state.fuSelected.delete(id); renderFollowup();
+  }));
+  body.querySelectorAll('[data-fu-select-page]').forEach(cb=>cb.addEventListener('change',()=>{
+    const list=fuFollowupList(), p=fuPaginate('all',list);
+    p.items.forEach(m=>{const id=String(m.id);if(cb.checked)state.fuSelected.add(id);else state.fuSelected.delete(id);}); renderFollowup();
+  }));
 }
 function renderFollowup(){
-  const due=fuActiveMembers().filter(m=>fuIsDue(m.id));
-  const noreply=fuGroupOf('noreply'), replied=fuGroupOf('replied');
-  const back=fuGroupOf('back').filter(m=>fuDaysBetween(fuRec(m.id).lastAttended,todayISO())<=21);
-  const badge=document.getElementById('followupTabCount');
-  const n=due.length+noreply.length+replied.length;
+  const all=fuFollowupList();
+  const due=all.filter(m=>fuIsDue(m.id));
+  const noreply=all.filter(m=>fuFollowupStatus(m)==='noreply');
+  const replied=all.filter(m=>fuFollowupStatus(m)==='replied');
+  const back=all.filter(m=>fuFollowupStatus(m)==='back');
+  const badge=document.getElementById('followupTabCount'), n=due.length+noreply.length+replied.length;
   badge.textContent=n?String(n):'';
   const strip=document.getElementById('fuStrip');
-  strip.innerHTML=fuStat('due',due.length,'Due now')+fuStat('noreply',noreply.length,'No reply')+fuStat('replied',replied.length,'Replied, not back')+fuStat('back',back.length,'Came back');
+  strip.innerHTML=fuStat('noreply',noreply.length,'Waiting on a reply')+fuStat('replied',replied.length,'Replied, not back')+fuStat('back',back.length,'Came back');
   strip.querySelectorAll('[data-fu-focus]').forEach(b=>b.addEventListener('click',()=>{state.fuFocus=state.fuFocus===b.dataset.fuFocus?null:b.dataset.fuFocus;renderFollowup();}));
-  renderFollowupReport();
-  const body=document.getElementById('fuBody'), f=state.fuFocus; let out='';
-  if(!f||f==='due') out+=fuSectionPaged('Due now','you planned to reach out by today','fu-r-due','due',due,'Nothing scheduled for today.');
-  if(!f||f==='noreply') out+=fuSectionPaged('Waiting on a reply','followed up, no answer yet','fu-r-noreply','noreply',noreply,'Everyone you followed up has answered.');
-  if(!f||f==='replied') out+=fuSectionPaged('Replied, not back yet','answered you, has not attended since','fu-r-replied','replied',replied,'No one is in this state right now.');
-  if(!f||f==='back') out+=fuSectionPaged('Came back','attended after your follow-up, in the last 3 weeks','fu-r-back','back',back,'No returns logged in the last 3 weeks.');
+  const body=document.getElementById('fuBody'), f=state.fuFocus;
+  let list=all;
+  if(f==='noreply') list=noreply;
+  else if(f==='replied') list=replied;
+  else if(f==='back') list=back;
+  else if(f==='due') list=due;
+  let out='<div class="fu-bulkbar" id="fuBulkBar" style="display:none;"><span class="fu-selected-count" id="fuSelectedCount">0 selected</span><div class="fu-bulk-actions"><button type="button" class="ghost" id="fuBulkLogBtn">Log a follow-up</button><button type="button" class="primary" id="fuBulkCameBtn">Came to church</button><button type="button" class="ghost" id="fuClearSelectedBtn">Clear</button></div></div>';
+  out+=fuSectionPaged('Follow-up list','select people below to log a follow-up or mark that they came to church','fu-r-replied','all',list,'No follow-up records found.');
   body.innerHTML=out;
   body.querySelectorAll('[data-fu-person]').forEach(b=>b.addEventListener('click',()=>fuOpenPerson(b.dataset.fuPerson)));
-  body.querySelectorAll('[data-fu-log]').forEach(b=>b.addEventListener('click',()=>fuOpenLog(b.dataset.fuLog)));
-  body.querySelectorAll('[data-fu-came]').forEach(b=>b.addEventListener('click',()=>fuOpenCame(b.dataset.fuCame)));
   body.querySelectorAll('[data-fu-prev]').forEach(b=>b.addEventListener('click',()=>{const k=b.dataset.fuPrev;state.fuPages[k]=Math.max(1,(state.fuPages[k]||1)-1);renderFollowup();}));
   body.querySelectorAll('[data-fu-next]').forEach(b=>b.addEventListener('click',()=>{const k=b.dataset.fuNext;state.fuPages[k]=(state.fuPages[k]||1)+1;renderFollowup();}));
+  fuBindSelection(body); fuUpdateBulkBar();
+  document.getElementById('fuBulkLogBtn')?.addEventListener('click',()=>{const ids=fuSelectedIds();if(ids.length)fuOpenBulkLog(ids);});
+  document.getElementById('fuBulkCameBtn')?.addEventListener('click',()=>{const ids=fuSelectedIds();if(ids.length)fuOpenBulkCame(ids);});
+  document.getElementById('fuClearSelectedBtn')?.addEventListener('click',()=>{state.fuSelected.clear();renderFollowup();});
 }
 
 // ---------- Follow-up sheets (modal) ----------
@@ -2721,6 +2656,29 @@ function renderFollowupReport(){
   const size=25,totalPages=Math.max(1,Math.ceil(data.rows.length/size));state.fuReportPage=Math.min(Math.max(1,state.fuReportPage||1),totalPages);const start=(state.fuReportPage-1)*size,page=data.rows.slice(start,start+size);
   document.getElementById('fuReportTbody').innerHTML=page.map(x=>'<tr><td>'+escapeHtml(fuFmtFull(x.e.date))+'</td><td>'+escapeHtml(x.m.name||'')+'</td><td>'+escapeHtml(x.m.ageGroup||x.m.group||'')+'</td><td>'+escapeHtml(x.e.method||'')+'</td><td>'+escapeHtml(x.e.replied?'Yes':'No')+(x.e.reply?' · '+escapeHtml(x.e.reply):'')+'</td><td>'+escapeHtml(x.e.prayer||'')+'</td><td>'+escapeHtml(x.e.next?fuFmtFull(x.e.next):'')+'</td></tr>').join('');
   const pg=document.getElementById('fuReportPagination');pg.style.display=data.rows.length?'flex':'none';document.getElementById('fuReportPageInfo').textContent=data.rows.length?'Showing '+(start+1)+'–'+Math.min(start+size,data.rows.length)+' of '+data.rows.length:'';document.getElementById('fuReportPrevBtn').disabled=state.fuReportPage<=1;document.getElementById('fuReportNextBtn').disabled=state.fuReportPage>=totalPages;
+}
+
+function fuOpenBulkLog(ids){
+  fuOpenSheet('<h3>Log a follow-up</h3><div class="msg" style="border:none;background:none;padding:0;margin:-10px 0 14px;">This will be logged for <strong>'+ids.length+'</strong> selected people.</div>'
+    +'<div class="field"><label>Date</label><input type="date" id="fuDate" value="'+todayISO()+'"></div>'
+    +'<div class="field"><label>How</label><div class="fu-seg" id="fuMethod"><button data-m="Message" class="on" type="button">Message</button><button data-m="Call" type="button">Call</button><button data-m="Visit" type="button">Visit</button></div></div>'
+    +'<div class="field"><label>Did they reply?</label><div class="fu-seg" id="fuReplied"><button data-r="no" class="on" type="button">Not yet</button><button data-r="yes" type="button">Yes, they replied</button></div></div>'
+    +'<div class="field"><label for="fuReply">What they said</label><textarea id="fuReply" rows="3" style="width:100%;padding:9px 10px;border:1px solid var(--line);font-family:inherit;font-size:14.5px;"></textarea></div>'
+    +'<div class="field"><label for="fuPrayer">Prayer request</label><textarea id="fuPrayer" rows="2" style="width:100%;padding:9px 10px;border:1px solid var(--line);font-family:inherit;font-size:14.5px;"></textarea></div>'
+    +'<div class="field"><label for="fuNext">Follow up again on</label><input type="date" id="fuNext"></div>'
+    +'<div class="modal-actions"><button class="ghost" id="fuCancel">Cancel</button><button class="primary" id="fuSave">Save follow-up for '+ids.length+'</button></div>');
+  document.querySelectorAll('#fuMethod button,#fuReplied button').forEach(b=>b.addEventListener('click',()=>{b.parentElement.querySelectorAll('button').forEach(x=>x.classList.remove('on'));b.classList.add('on');}));
+  document.getElementById('fuCancel').addEventListener('click',fuCloseSheet);
+  document.getElementById('fuSave').addEventListener('click',async()=>{
+    const date=document.getElementById('fuDate').value||todayISO(),method=document.querySelector('#fuMethod .on').dataset.m,replied=document.querySelector('#fuReplied .on').dataset.r==='yes',reply=document.getElementById('fuReply').value.trim(),prayer=document.getElementById('fuPrayer').value.trim(),next=document.getElementById('fuNext').value||null;
+    ids.forEach(id=>{const r=fuRec(id)||{lastAttended:null,entries:[]};const copy={lastAttended:r.lastAttended,entries:Array.isArray(r.entries)?r.entries.slice():[]};copy.entries.push({id:'e'+Date.now()+'-'+id,date,method,replied,reply,prayer,next});state.contacts[id]=copy;});
+    const ok=await saveFollowup();if(!ok){alert('Could not save the follow-ups. Please try again.');return;}state.fuSelected.clear();fuCloseSheet();renderFollowup();showToast('Follow-up logged for '+ids.length+' people');
+  });
+}
+function fuOpenBulkCame(ids){
+  fuOpenSheet('<h3>Came to church</h3><div class="msg" style="border:none;background:none;padding:0;margin:-10px 0 14px;">This will mark <strong>'+ids.length+'</strong> selected people as having come to church.</div><div class="field"><label for="fuADate">Which Sunday</label><input type="date" id="fuADate" value="'+fuLastSunday()+'"></div><div class="modal-actions"><button class="ghost" id="fuCancel2">Cancel</button><button class="primary" id="fuSave2">Save for '+ids.length+'</button></div>');
+  document.getElementById('fuCancel2').addEventListener('click',fuCloseSheet);
+  document.getElementById('fuSave2').addEventListener('click',async()=>{const d=document.getElementById('fuADate').value||todayISO();for(const id of ids)await markFollowupAttendance(id,d,false);state.fuSelected.clear();fuCloseSheet();renderFollowup();showToast(ids.length+' people marked as back');});
 }
 
 function fuOpenLog(id){
@@ -2840,6 +2798,22 @@ function exportFollowupCsv(){
   }
   const csv = rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\\r\\n');
   downloadText(csv, 'follow-ups-'+todayISO()+'.csv', 'text/csv;charset=utf-8');
+}
+
+function exportFollowupReportCsv(){
+  const dateEl=document.getElementById('fuReportDate');
+  const period=state.fuReportPeriod||'week';
+  const anchor=dateEl && dateEl.value ? dateEl.value : todayISO();
+  const data=fuReportRows(period,anchor);
+  if(!data.rows.length){ showToast('No follow-up records in this period.'); return; }
+  const rows=[['Date','Name','Group','How','Replied','What they said','Prayer request','Next follow-up','Last attended']];
+  data.rows.forEach(x=>{
+    const e=x.e, r=fuRec(x.m.id)||{};
+    rows.push([e.date,x.m.name||'',x.m.ageGroup||x.m.group||'',e.method||'',e.replied?'Yes':'No',e.reply||'',e.prayer||'',e.next||'',r.lastAttended||'']);
+  });
+  const csv='\ufeff'+rows.map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\r\n');
+  downloadText(csv,'follow-up-'+period+'-'+anchor+'.csv','text/csv;charset=utf-8');
+  showToast('Follow-up report exported.');
 }
 
 // ---------- Realtime sync (Supabase only) ----------
@@ -3055,11 +3029,7 @@ async function init(){
   setupRealtimeSync();
   if(!usingSharedStorage){
     const n = document.getElementById('browserNotice');
-    if(n && n.style.display !== 'block'){
-      n.style.display = 'block';
-      n.className = 'msg';
-      n.textContent = 'Saving to this device only right now — add your Supabase URL and key near the top of the code to sync across devices.';
-    }
+    if(n){ n.style.display='block'; n.className='msg err'; n.textContent='Supabase is required. Church data is not being stored in this browser.'; }
   }
 }
 </script>

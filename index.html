@@ -259,6 +259,23 @@
   .bulk-results .status-err{color:var(--rust);font-weight:600;}
   .bulk-results .thumb{width:42px;height:42px;object-fit:cover;border:1px solid var(--line);}
 
+  /* Automatic follow-up settings */
+  .fu-settings{border:1px solid var(--line);background:#fffdf8;padding:14px;margin:0 0 18px;}
+  .fu-settings-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+  .fu-settings-title{font-family:'Lora',serif;font-size:16px;font-weight:600;color:var(--ink);margin:0;}
+  .fu-settings-note{font-size:12px;color:var(--ink-light);margin:3px 0 0;line-height:1.5;}
+  .fu-toggle-row{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:10px 0;border-top:1px solid var(--line);margin-top:12px;}
+  .fu-toggle{position:relative;width:44px;height:24px;display:inline-block;flex:0 0 auto;}
+  .fu-toggle input{opacity:0;width:0;height:0;}
+  .fu-toggle span{position:absolute;inset:0;background:#cfc8bd;border-radius:24px;cursor:pointer;transition:.18s;}
+  .fu-toggle span:before{content:'';position:absolute;width:18px;height:18px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.18s;box-shadow:0 1px 3px rgba(0,0,0,.18);}
+  .fu-toggle input:checked + span{background:var(--sage);}
+  .fu-toggle input:checked + span:before{transform:translateX(20px);}
+  .fu-group-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:10px;}
+  .fu-group-option{border:1px solid var(--line);background:var(--parchment);padding:9px 10px;display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12.5px;}
+  .fu-group-option.off{opacity:.58;}
+  @media(max-width:760px){.fu-group-grid{grid-template-columns:repeat(2,1fr);}}
+
   /* Reports */
   .reports-top{display:flex;align-items:flex-end;gap:16px;margin-bottom:18px;flex-wrap:wrap;}
   h2.section-title{font-family:'Lora',serif;font-size:20px;font-weight:600;color:var(--ink);margin:0 0 16px;}
@@ -416,6 +433,10 @@
   .edit-face-head{font-family:'Lora',serif;font-size:15px;font-weight:600;color:var(--ink);margin-bottom:10px;}
   .edit-face-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
   .edit-face-box .msg{margin-top:10px;}
+
+  .fu-controls{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;border:1px solid var(--line);background:#fffdf8;padding:10px 12px;margin:0 0 12px;}
+  .fu-controls .field label{margin-bottom:4px;}
+  @media(max-width:600px){.fu-controls .field{flex:1;min-width:140px!important;}}
 </style>
 </head>
 <body>
@@ -484,6 +505,7 @@
     <button data-tab="followup">Follow-up<span class="tabcount" id="followupTabCount"></span></button>
     <button data-tab="members">Members</button>
     <button data-tab="reports">Reports</button>
+    <button data-tab="settings">Settings</button>
   </nav>
 
   <!-- CHECK-IN -->
@@ -535,7 +557,30 @@
   <section class="panel" id="panel-followup">
     <div class="fu-head">
       <h2 class="section-title" style="margin:0;">Follow-up</h2>
-      <button class="primary" id="fuNewBtn" type="button">+ New follow-up</button>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end;">
+        <button class="ghost" id="fuRefreshBtn" type="button">↻ Run / Refresh</button>
+        <button class="primary" id="fuNewBtn" type="button">+ New follow-up</button>
+      </div>
+    </div>
+    <div class="fu-controls">
+      <div class="field" style="margin:0;min-width:190px;">
+        <label for="fuSortSelect">Sort by</label>
+        <select id="fuSortSelect">
+          <option value="status">Status</option>
+          <option value="responsibility">Responsibility</option>
+          <option value="group">Group</option>
+          <option value="name">Name</option>
+          <option value="lastFollowup">Last follow-up</option>
+          <option value="lastAttended">Last attended</option>
+        </select>
+      </div>
+      <div class="field" style="margin:0;min-width:150px;">
+        <label for="fuSortDir">Order</label>
+        <select id="fuSortDir">
+          <option value="asc">A–Z / oldest</option>
+          <option value="desc">Z–A / newest</option>
+        </select>
+      </div>
     </div>
     <div class="fu-strip" id="fuStrip"></div>
     <div id="fuBody"></div>
@@ -754,7 +799,28 @@
   </div>
 
 
-  <!-- REPORTS -->
+  <!-- SETTINGS -->
+  <section class="panel" id="panel-settings">
+    <h2 class="section-title">Settings</h2>
+    <div class="fu-settings">
+      <div class="fu-settings-head">
+        <div>
+          <h3 class="fu-settings-title">Automatic Follow-up</h3>
+          <p class="fu-settings-note">Automatically add a Sunday Absence follow-up for regular members who did not attend any Sunday service. Changes are saved to Supabase and apply on all devices.</p>
+        </div>
+        <label class="fu-toggle" title="Turn automatic follow-up on or off">
+          <input type="checkbox" id="fuAutoEnabled">
+          <span></span>
+        </label>
+      </div>
+      <div id="fuAutoGroupsWrap">
+        <div style="font-size:12.5px;font-weight:600;color:var(--ink);margin:12px 0 5px;">Groups included in automatic follow-up</div>
+        <div class="fu-group-grid" id="fuAutoGroups"></div>
+      </div>
+    </div>
+    <div class="msg" style="margin-top:12px;">Use <strong>Run / Refresh</strong> in the Follow-up tab to check Supabase and generate any new automatic Sunday absence records.</div>
+  </section>
+
   <section class="panel" id="panel-reports">
     <h2 class="section-title">Reports</h2>
 
@@ -871,6 +937,7 @@ const state = {
   bulkFiles: [],
   bulkRunning: false,
   contacts: {},
+  followupSettings: { enabled:false, groups:{Kids:true, Youth:true, Yamo:true, Men:true, Ladies:true} },
   memberSubtab: 'directory',
   fuFocus: null,
   fuQuery: '',
@@ -879,6 +946,8 @@ const state = {
   fuPageSize: 25,
   fuPages: { due:1, noreply:1, replied:1, back:1 },
   fuSelected: new Set(),
+  fuSort: 'status',
+  fuSortDir: 'asc',
   fuReportPeriod: 'week',
   fuReportPage: 1,
   memberSort: { key: 'name', dir: 'asc' },
@@ -1291,10 +1360,52 @@ async function loadFollowup(){
   }catch(e){
     state.contacts = {};
   }
-  if(Object.keys(state.contacts).length === 0){
-    state.contacts = JSON.parse(JSON.stringify(FOLLOWUP_SEED));
-    await saveFollowup();
-  }
+  try{
+    const sr = await storageApi.get('followupSettings');
+    if(sr && sr.value){
+      const parsed = JSON.parse(sr.value);
+      state.followupSettings = {
+        enabled: parsed.enabled !== false,
+        groups: {Kids:true, Youth:true, Yamo:true, Men:true, Ladies:true, ...(parsed.groups||{})}
+      };
+    }
+  }catch(e){}
+  renderFollowupSettings();
+}
+async function saveFollowupSettings(){
+  try{
+    return !!(await storageApi.set('followupSettings', JSON.stringify(state.followupSettings)));
+  }catch(e){ return false; }
+}
+function fuGroupName(m){ return String(m && (m.ageGroup || m.group) || '').trim(); }
+function fuAutoGroupEnabled(m){
+  const g=fuGroupName(m);
+  return !!(g && state.followupSettings.groups[g] && state.followupSettings.enabled);
+}
+function renderFollowupSettings(){
+  const toggle=document.getElementById('fuAutoEnabled');
+  const wrap=document.getElementById('fuAutoGroupsWrap');
+  const grid=document.getElementById('fuAutoGroups');
+  if(!toggle || !grid) return;
+  toggle.checked=state.followupSettings.enabled !== false;
+  if(wrap) wrap.style.opacity=toggle.checked?'1':'.55';
+  const groups=['Kids','Youth','Yamo','Men','Ladies'];
+  grid.innerHTML=groups.map(g=>'<div class="fu-group-option '+(state.followupSettings.groups[g]?'':'off')+'"><span>'+g+'</span><label class="fu-toggle"><input type="checkbox" data-fu-auto-group="'+g+'" '+(state.followupSettings.groups[g]?'checked':'')+'><span></span></label></div>').join('');
+  grid.querySelectorAll('[data-fu-auto-group]').forEach(cb=>cb.addEventListener('change',async()=>{
+    state.followupSettings.groups[cb.dataset.fuAutoGroup]=cb.checked;
+    cb.closest('.fu-group-option')?.classList.toggle('off',!cb.checked);
+    const ok=await saveFollowupSettings();
+    if(!ok) alert('Could not save automatic follow-up settings.');
+    else { await autoLogSundayAbsences(); renderFollowup(); }
+  }));
+  toggle.onchange=async()=>{
+    state.followupSettings.enabled=toggle.checked;
+    if(wrap) wrap.style.opacity=toggle.checked?'1':'.55';
+    const ok=await saveFollowupSettings();
+    if(!ok){ alert('Could not save automatic follow-up settings.'); return; }
+    if(toggle.checked) await autoLogSundayAbsences();
+    renderFollowup();
+  };
 }
 async function saveFollowup(){
   try{
@@ -1304,18 +1415,59 @@ async function saveFollowup(){
     return false;
   }
 }
-// Called whenever attendance is recorded (face check-in or a manual "Came
-// to church" mark) so the Follow-up tab reflects it immediately.
+// Attendance is tracked separately from follow-up. A face scan should NOT
+// create a follow-up record. It only updates the person's last-attended date.
 async function markFollowupAttendance(memberId, dKey, viaCheckin){
   const r = state.contacts[memberId] || { lastAttended: null, entries: [] };
-  const copy = { lastAttended: r.lastAttended, entries: r.entries.slice() };
+  const copy = { lastAttended: r.lastAttended, entries: Array.isArray(r.entries) ? r.entries.slice() : [] };
   if(!copy.lastAttended || dKey > copy.lastAttended) copy.lastAttended = dKey;
-  if(viaCheckin){
-    copy.entries.push({ id:'ci'+Date.now()+Math.random().toString(36).slice(2,5), date:dKey,
-      method:'Check-in', replied:true, reply:'', prayer:'', next:null });
-  }
   state.contacts[memberId] = copy;
   await saveFollowup();
+}
+
+// Automatically create a follow-up record for regular members who were absent
+// from ALL Sunday services. This runs only after the Sunday services are over
+// (6:00 PM Sunday onward, or any time Monday-Saturday).
+async function autoLogSundayAbsences(){
+  if(state.followupSettings.enabled === false) return;
+  const now = new Date();
+  const day = now.getDay();
+  if(day === 0 && now.getHours() < 18) return;
+
+  const sunday = new Date(now);
+  if(day === 0) sunday.setDate(sunday.getDate() - 0);
+  else sunday.setDate(sunday.getDate() - day);
+  const sundayKey = dateKey(sunday);
+  const attendance = await loadAttendance(sundayKey);
+  const present = new Set((attendance || []).map(r=>String(r.id)));
+  let changed = false;
+
+  for(const m of state.members){
+    // Automatic absence follow-up is for regular members in enabled groups.
+    if(String(m.regular || 'Yes').toLowerCase() !== 'yes') continue;
+    if(!fuAutoGroupEnabled(m)) continue;
+    if(present.has(String(m.id))) continue;
+
+    const r = state.contacts[m.id] || { lastAttended:null, entries:[] };
+    const entries = Array.isArray(r.entries) ? r.entries.slice() : [];
+    const alreadyLogged = entries.some(e => fuIsContact(e) && e.date === sundayKey);
+    if(alreadyLogged) continue;
+
+    entries.push({
+      id:'sa'+Date.now()+'-'+String(m.id),
+      date:sundayKey,
+      method:'Sunday Absence',
+      replied:false,
+      reply:'',
+      prayer:'',
+      next:null,
+      automatic:true
+    });
+    state.contacts[m.id] = { lastAttended:r.lastAttended || null, entries };
+    changed = true;
+  }
+
+  if(changed) await saveFollowup();
 }
 
 async function loadAttendance(dKey){
@@ -2500,10 +2652,9 @@ function fuFollowupStatus(m){
   return 'other';
 }
 function fuFollowupList(){
-  return fuActiveMembers().filter(m=>{
-    const r=fuRec(m.id);
-    return !!(fuLastEntry(m.id) || (r && r.lastAttended));
-  }).sort((a,b)=>{
+  // Attendance alone must never place someone in the Follow-up tab.
+  // A person appears here only when there is an actual follow-up/contact record.
+  return fuActiveMembers().filter(m=>!!fuLastEntry(m.id)).sort((a,b)=>{
     const rank={back:3,replied:2,noreply:1,due:0,other:-1};
     const ra=rank[fuFollowupStatus(a)], rb=rank[fuFollowupStatus(b)];
     if(ra!==rb) return rb-ra;
@@ -2519,12 +2670,12 @@ function fuSectionPaged(title,hint,cls,key,list,emptyMsg){
   const allPageSelected=pageIds.length>0 && pageIds.every(id=>state.fuSelected.has(id));
   h+='<div class="fu-table-wrap"><table class="fu-table"><thead><tr>'
     +'<th class="fu-check"><input type="checkbox" data-fu-select-page="all" '+(allPageSelected?'checked':'')+' aria-label="Select all on this page"></th>'
-    +'<th>Name</th><th>Group</th><th>Last follow-up</th><th>Status</th><th>Last attended</th></tr></thead><tbody>';
+    +'<th>Name</th><th>Group</th><th>Responsibility</th><th>Last follow-up</th><th>Status</th><th>Last attended</th></tr></thead><tbody>';
   h+=p.items.map(m=>{
     const r=fuRec(m.id), last=fuLastEntry(m.id), checked=state.fuSelected.has(String(m.id))?' checked':'';
     return '<tr><td class="fu-check"><input type="checkbox" data-fu-select="'+escapeHtml(String(m.id))+'"'+checked+' aria-label="Select '+escapeHtml(m.name||'member')+'"></td>'
       +'<td><button type="button" class="fu-name" data-fu-person="'+escapeHtml(String(m.id))+'">'+escapeHtml(m.name||'')+'</button></td>'
-      +'<td>'+escapeHtml(m.ageGroup||m.group||'')+'</td><td>'+escapeHtml(last?fuFmtFull(last.date):'Not contacted yet')+'</td>'
+      +'<td>'+escapeHtml(m.ageGroup||m.group||'')+'</td><td>'+escapeHtml(m.role||m.responsibility||'')+'</td><td>'+escapeHtml(last?fuFmtFull(last.date):'Not contacted yet')+'</td>'
       +'<td>'+fuStatusLabel(m)+'</td><td>'+escapeHtml(r&&r.lastAttended?fuFmtFull(r.lastAttended):'—')+'</td></tr>';
   }).join('');
   return h+'</tbody></table></div>'+fuPaginationHtml(key,p)+'</div>';
@@ -2543,8 +2694,28 @@ function fuBindSelection(body){
     p.items.forEach(m=>{const id=String(m.id);if(cb.checked)state.fuSelected.add(id);else state.fuSelected.delete(id);}); renderFollowup();
   }));
 }
+function fuSortFollowupList(list){
+  const dir=state.fuSortDir==='desc'?-1:1;
+  const val=m=>{
+    const r=fuRec(m.id), last=fuLastEntry(m.id);
+    if(state.fuSort==='responsibility') return String(m.role||m.responsibility||'').toLowerCase();
+    if(state.fuSort==='group') return String(m.ageGroup||m.group||'').toLowerCase();
+    if(state.fuSort==='name') return String(m.name||'').toLowerCase();
+    if(state.fuSort==='lastFollowup') return last?String(last.date):'';
+    if(state.fuSort==='lastAttended') return r&&r.lastAttended?String(r.lastAttended):'';
+    return String(fuStatusLabel(m)||'').toLowerCase();
+  };
+  return list.slice().sort((a,b)=>{const av=val(a),bv=val(b);if(av===bv)return String(a.name||'').localeCompare(String(b.name||''));return av<bv?-1*dir:1*dir;});
+}
+async function refreshFollowupData(){
+  const btn=document.getElementById('fuRefreshBtn');
+  if(btn){btn.disabled=true;btn.textContent='Running…';}
+  try{await loadFollowup();await autoLogSundayAbsences();await loadFollowup();renderFollowup();showToast('Follow-up data refreshed.');}
+  catch(e){alert('Could not refresh follow-up data: '+(e&&e.message?e.message:e));}
+  finally{if(btn){btn.disabled=false;btn.textContent='↻ Run / Refresh';}}
+}
 function renderFollowup(){
-  const all=fuFollowupList();
+  const all=fuSortFollowupList(fuFollowupList());
   const due=all.filter(m=>fuIsDue(m.id));
   const noreply=all.filter(m=>fuFollowupStatus(m)==='noreply');
   const replied=all.filter(m=>fuFollowupStatus(m)==='replied');
@@ -2765,6 +2936,9 @@ function fuOpenPicker(){
 }
 
 document.getElementById('fuNewBtn').addEventListener('click', fuOpenPicker);
+document.getElementById('fuRefreshBtn')?.addEventListener('click', refreshFollowupData);
+document.getElementById('fuSortSelect')?.addEventListener('change', e=>{state.fuSort=e.target.value;renderFollowup();});
+document.getElementById('fuSortDir')?.addEventListener('change', e=>{state.fuSortDir=e.target.value;renderFollowup();});
 document.getElementById('fuReportWeekBtn').addEventListener('click',()=>{state.fuReportPeriod='week';state.fuReportPage=1;renderFollowupReport();});
 document.getElementById('fuReportMonthBtn').addEventListener('click',()=>{state.fuReportPeriod='month';state.fuReportPage=1;renderFollowupReport();});
 document.getElementById('fuReportYearBtn').addEventListener('click',()=>{state.fuReportPeriod='year';state.fuReportPage=1;renderFollowupReport();});
@@ -2835,6 +3009,10 @@ function setupRealtimeSync(){
       state.contacts = value;
       if(document.getElementById('panel-followup').classList.contains('active')) renderFollowup();
       else { const badge=document.getElementById('followupTabCount'); const n=fuNeedsAttentionCount(); badge.textContent = n?String(n):''; }
+    } else if(key === 'followupSettings' && value && typeof value === 'object'){
+      state.followupSettings = {enabled:value.enabled !== false, groups:{Kids:true, Youth:true, Yamo:true, Men:true, Ladies:true, ...(value.groups||{})}};
+      renderFollowupSettings();
+      if(document.getElementById('panel-followup').classList.contains('active')) renderFollowup();
     } else if(key === 'attendance:'+state.todayKey && Array.isArray(value)){
       state.attendanceToday = value;
       renderTodayList();
@@ -3020,6 +3198,9 @@ async function init(){
   await loadMembers();
   await loadFollowup();
   state.attendanceToday = await loadAttendance(state.todayKey);
+  // Build the follow-up list from Sunday absences after Sunday services are over.
+  // This is intentionally done before rendering so the new absence records appear immediately.
+  await autoLogSundayAbsences();
   renderTodayList();
   renderFollowup();
   await ensureCheckinCamera();
