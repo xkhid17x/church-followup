@@ -248,6 +248,7 @@
   .bulk-options{display:flex;gap:14px;flex-wrap:wrap;align-items:end;margin-bottom:18px;}
   .bulk-options .field{margin:0;min-width:160px;}
   .bulk-actions{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+  .backup-panel-note{max-width:760px;line-height:1.6;}
   .bulk-progress-wrap{display:none;margin:12px 0 18px;}
   .bulk-progress{height:10px;background:var(--parchment-dark);border:1px solid var(--line);overflow:hidden;}
   .bulk-progress > div{height:100%;width:0%;background:var(--gold);transition:width .15s;}
@@ -307,6 +308,7 @@
   .subpanel.active{display:block;}
   .subsection-title{font-family:'Lora',serif;font-size:16px;font-weight:600;color:var(--ink);margin:36px 0 12px;
     border-top:1px solid var(--line);padding-top:22px;}
+  .backup-block .msg{max-width:640px;}
 
   /* Follow-up */
   .fu-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:0 0 22px;}
@@ -362,7 +364,6 @@
   .fu-face-yes{color:var(--sage);font-weight:700;} .fu-face-no{color:var(--ink-light);}
   .fu-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px;}
   .fu-head button{padding:9px 16px;font-size:13.5px;}
-  .report-section{border:1px solid var(--line);background:#fffdf8;padding:16px;margin:0 0 24px;}
   .fu-report{border:1px solid var(--line);background:#fffdf8;padding:14px;margin:0 0 24px;}
   .fu-report-head{display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:12px;}
   .fu-report-periods{display:flex;gap:6px;flex-wrap:wrap;}
@@ -524,6 +525,37 @@
       <button class="primary" id="fuNewBtn" type="button">+ New follow-up</button>
     </div>
     <div class="fu-strip" id="fuStrip"></div>
+    <div class="fu-report">
+      <div class="fu-report-head">
+        <div>
+          <h3 style="font-family:'Lora',serif;color:var(--ink);font-size:16px;margin:0 0 3px;">Follow-up report</h3>
+          <div id="fuReportLabel" style="font-size:12.5px;color:var(--ink-light);"></div>
+        </div>
+        <div class="fu-report-periods">
+          <button type="button" class="ghost" id="fuReportWeekBtn">Weekly</button>
+          <button type="button" class="ghost" id="fuReportMonthBtn">Monthly</button>
+          <button type="button" class="ghost" id="fuReportYearBtn">Yearly</button>
+        </div>
+        <div class="field" style="margin:0;">
+          <label for="fuReportDate">Report date</label>
+          <input type="date" id="fuReportDate">
+        </div>
+      </div>
+      <div class="fu-report-summary" id="fuReportSummary"></div>
+      <div class="fu-report-table">
+        <table>
+          <thead><tr><th>Date</th><th>Name</th><th>Group</th><th>How</th><th>Reply</th><th>Prayer request</th><th>Next follow-up</th></tr></thead>
+          <tbody id="fuReportTbody"></tbody>
+        </table>
+      </div>
+      <div class="fu-pagination" id="fuReportPagination" style="display:none;">
+        <span id="fuReportPageInfo"></span>
+        <div style="display:flex;gap:8px;">
+          <button type="button" class="ghost" id="fuReportPrevBtn">&laquo; Back</button>
+          <button type="button" class="ghost" id="fuReportNextBtn">Next &raquo;</button>
+        </div>
+      </div>
+    </div>
     <div id="fuBody"></div>
   </section>
 
@@ -662,6 +694,7 @@
     </div>
     <div class="bulk-actions" style="margin-bottom:16px;">
       <button class="ghost" id="exportMembersBtn">Export Members CSV</button>
+      <button class="ghost" id="exportFollowupBtn2">Export Follow-up CSV</button>
     </div>
     <table>
       <thead>
@@ -742,61 +775,33 @@
 
   <!-- REPORTS -->
   <section class="panel" id="panel-reports">
-    <h2 class="section-title">Reports</h2>
-
-    <div class="report-section">
-      <h3 class="subsection-title">Attendance Report</h3>
-      <div class="reports-top">
-        <div class="field" style="margin:0;">
-          <label for="reportDate">Date</label>
-          <input type="date" id="reportDate" />
-        </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;">
-          <button class="ghost" id="exportCsvBtn">Export Attendance CSV</button>
-          <button class="ghost" id="resetDateBtn">Reset Selected Date</button>
-        </div>
+    <h2 class="section-title">Attendance Reports</h2>
+    <div class="reports-top">
+      <div class="field" style="margin:0;">
+        <label for="reportDate">Date</label>
+        <input type="date" id="reportDate" />
       </div>
-      <div class="stat-line" id="reportStat"></div>
-      <div style="overflow:auto;">
-        <table>
-          <thead><tr><th></th><th>Name</th><th>Contact</th><th>Address</th><th>Invited By</th><th>Age Group</th><th>Regular</th><th>Service</th><th>Time</th><th>Action</th></tr></thead>
-          <tbody id="reportTbody"></tbody>
-        </table>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="ghost" id="exportCsvBtn">Export CSV</button>
+        <button class="ghost" id="resetDateBtn">Reset Selected Date</button>
       </div>
-      <div class="empty-note" id="reportEmpty" style="display:none;"></div>
     </div>
-
-    <div class="report-section fu-report">
-      <div class="fu-report-head">
-        <div>
-          <h3 class="subsection-title" style="margin:0 0 3px;">Follow-up Report</h3>
-          <div id="fuReportLabel" style="font-size:12.5px;color:var(--ink-light);"></div>
-        </div>
-        <div class="fu-report-periods">
-          <button type="button" class="ghost" id="fuReportWeekBtn">Weekly</button>
-          <button type="button" class="ghost" id="fuReportMonthBtn">Monthly</button>
-          <button type="button" class="ghost" id="fuReportYearBtn">Yearly</button>
-        </div>
-        <div class="field" style="margin:0;">
-          <label for="fuReportDate">Report date</label>
-          <input type="date" id="fuReportDate">
-        </div>
-        <button type="button" class="ghost" id="exportFollowupReportBtn">Export Follow-up CSV</button>
-      </div>
-      <div class="fu-report-summary" id="fuReportSummary"></div>
-      <div class="fu-report-table">
-        <table>
-          <thead><tr><th>Date</th><th>Name</th><th>Group</th><th>How</th><th>Reply</th><th>Prayer request</th><th>Next follow-up</th></tr></thead>
-          <tbody id="fuReportTbody"></tbody>
-        </table>
-      </div>
-      <div class="fu-pagination" id="fuReportPagination" style="display:none;">
-        <span id="fuReportPageInfo"></span>
-        <div style="display:flex;gap:8px;">
-          <button type="button" class="ghost" id="fuReportPrevBtn">&laquo; Back</button>
-          <button type="button" class="ghost" id="fuReportNextBtn">Next &raquo;</button>
-        </div>
-      </div>
+    <div class="stat-line" id="reportStat"></div>
+    <table>
+      <thead><tr><th></th><th>Name</th><th>Contact</th><th>Address</th><th>Invited By</th><th>Age Group</th><th>Regular</th><th>Service</th><th>Time</th><th>Action</th></tr></thead>
+      <tbody id="reportTbody"></tbody>
+    </table>
+    <div class="empty-note" id="reportEmpty" style="display:none;"></div>
+    <div class="backup-block">
+    <h3 class="subsection-title">Backup &amp; Restore</h3>
+    <div class="msg">Your members, enrolled faces, and attendance records are stored in this browser. Use <strong>Export Full Backup</strong> regularly so you can restore everything if Chrome data is cleared, the computer changes, or the browser profile is lost.</div>
+    <div class="bulk-actions">
+      <button class="primary" id="exportBackupBtn">Export Full Backup</button>
+      <button class="ghost" id="importBackupBtn">Import Backup</button>
+      <input type="file" id="importBackupInput" accept="application/json,.json" style="display:none;">
+    </div>
+    <div id="backupMsg"></div>
+    <div class="empty-note">A full backup includes member profiles, enrolled face descriptors and thumbnails, plus all saved attendance history.</div>
     </div>
   </section>
 
@@ -828,8 +833,9 @@ const CHECKIN_DETECT_OPTS = () => {
 const MATCH_THRESHOLD = 0.5;
 
 // ---------- Supabase config ----------
-// Supabase is required for all church data. Members, enrolled faces,
-// attendance, and follow-up records are stored in the Supabase kv table.
+// Paste your Supabase project's URL and anon public key here (Project
+// Settings -> API). Until both are filled in, the app saves to this
+// browser's local storage only (works, but does not sync between devices).
 const SUPABASE_URL = "https://hyemvrtfkmpaffnztelo.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_cIvR_HclRiLTJ2B3kGXXtA_FtqdJ2Gw";
 
@@ -909,7 +915,7 @@ function switchTab(tab){
   }
   if(tab==='members'){ switchMemberSubtab(state.memberSubtab); }
   if(tab==='followup'){ renderFollowup(); }
-  if(tab==='reports'){ loadReportForDate(document.getElementById('reportDate').value); renderFollowupReport(); }
+  if(tab==='reports'){ loadReportForDate(document.getElementById('reportDate').value); }
 }
 
 function switchMemberSubtab(sub){
@@ -941,33 +947,44 @@ function populateNameDatalist(){
 }
 
 // ---------- Storage ----------
-// Core church data is stored in Supabase only. Browser localStorage is not used
-// for members, enrolled faces, attendance, or follow-up records. Local storage
-// may still be used elsewhere for non-data preferences such as camera settings.
+// Primary store: Supabase (shared, syncs across devices) when SUPABASE_URL /
+// SUPABASE_ANON_KEY above are filled in and the `kv` table exists. Falls
+// back to this browser's localStorage otherwise, or if a Supabase call
+// fails (e.g. offline) — so the app keeps working either way.
 const storageApi = {
   async get(key){
-    if (!supa) throw new Error('Supabase is not configured. Church data cannot be loaded.');
-    const { data, error } = await supa.from('kv').select('value').eq('key', key).maybeSingle();
-    if (error) throw new Error('Supabase load failed: ' + error.message);
-    return data ? { value: JSON.stringify(data.value) } : null;
+    if (supa) {
+      try {
+        const { data, error } = await supa.from('kv').select('value').eq('key', key).maybeSingle();
+        if (!error) return data ? { value: JSON.stringify(data.value) } : null;
+        console.warn('Supabase get failed, using local cache:', error.message);
+      } catch(e) { console.warn('Supabase get error, using local cache:', e); }
+    }
+    const value = localStorage.getItem('church-attendance:' + key);
+    return value === null ? null : { value };
   },
   async set(key, value){
-    if (!supa) throw new Error('Supabase is not configured. Church data cannot be saved.');
-    let parsed;
-    try { parsed = JSON.parse(value); } catch(e) { parsed = value; }
-    const { data, error } = await supa.from('kv').upsert({ key, value: parsed, updated_at: new Date().toISOString() }, { onConflict:'key' }).select('value').single();
-    if (error) throw new Error('Supabase save failed: ' + error.message);
-    return { value: JSON.stringify(data.value) };
+    localStorage.setItem('church-attendance:' + key, value);
+    if (supa) {
+      try {
+        let parsed;
+        try { parsed = JSON.parse(value); } catch(e) { parsed = value; }
+        const { error } = await supa.from('kv').upsert({ key, value: parsed, updated_at: new Date().toISOString() });
+        if (error) { console.warn('Supabase save failed, kept locally only:', error.message); return null; }
+      } catch(e) { console.warn('Supabase save error, kept locally only:', e); return null; }
+    }
+    return { value };
   },
   async remove(key){
-    if (!supa) throw new Error('Supabase is not configured. Church data cannot be changed.');
-    const { error } = await supa.from('kv').delete().eq('key', key);
-    if (error) throw new Error('Supabase delete failed: ' + error.message);
+    localStorage.removeItem('church-attendance:' + key);
+    if (supa) {
+      try { await supa.from('kv').delete().eq('key', key); }
+      catch(e) { console.warn('Supabase delete failed:', e); }
+    }
     return true;
   }
 };
 const usingSharedStorage = !!supa;
-if(!supa){ console.error('Supabase is not configured. Core church data requires Supabase.'); }
 
 function rebuildMatcher(){
   if(!state.modelsLoaded){ return; }
@@ -2313,7 +2330,7 @@ function csvCell(value){
 }
 function exportMembersCsv(){
   if(state.members.length===0){
-    showToast('No members to export.');
+    showBackupMessage('No members to export.', 'err');
     return;
   }
   const headers = ['Full Name','Contact Number','Address','Invited By','Age Group','Regular','Enrolled Date'];
@@ -2324,6 +2341,128 @@ function exportMembersCsv(){
   });
   downloadText(csv, 'members-' + dateKey(new Date()) + '.csv', 'text/csv;charset=utf-8');
 }
+
+// ---------- Full backup / restore ----------
+async function getAllAttendanceForBackup(){
+  const indexRes = await storageApi.get('attendanceDates');
+  let dates = [];
+  try { dates = indexRes && indexRes.value ? JSON.parse(indexRes.value) : []; } catch(e) {}
+  const attendance = {};
+  for(const dKey of dates){
+    attendance[dKey] = await loadAttendance(dKey);
+  }
+  // Also scan normal localStorage in case the date index is missing or incomplete.
+  const prefix = 'church-attendance:attendance:';
+  for(let i=0; i<localStorage.length; i++){
+    const k = localStorage.key(i);
+    if(k && k.startsWith(prefix)){
+      const dKey = k.slice(prefix.length);
+      if(!Object.prototype.hasOwnProperty.call(attendance,dKey)){
+        try { attendance[dKey] = JSON.parse(localStorage.getItem(k) || '[]'); } catch(e) {}
+      }
+    }
+  }
+  return attendance;
+}
+
+async function exportFullBackup(){
+  try{
+    const attendance = await getAllAttendanceForBackup();
+    const backup = {
+      app: 'Congregation Check-In',
+      backupVersion: 1,
+      exportedAt: new Date().toISOString(),
+      members: state.members,
+      followupContacts: state.contacts,
+      attendance,
+    };
+    const json = JSON.stringify(backup);
+    downloadText(json, 'church-attendance-backup-' + dateKey(new Date()) + '.json', 'application/json');
+    showBackupMessage('Full backup exported successfully.', 'ok');
+  }catch(e){
+    console.error('Backup export failed:', e);
+    showBackupMessage('Could not create the backup: ' + (e.message || String(e)), 'err');
+  }
+}
+
+async function importFullBackup(file){
+  if(!file) return;
+  try{
+    const text = await file.text();
+    const backup = JSON.parse(text);
+    if(!backup || backup.app !== 'Congregation Check-In' || !Array.isArray(backup.members) || !backup.attendance || typeof backup.attendance !== 'object'){
+      throw new Error('This file is not a valid Church Attendance backup.');
+    }
+    const memberCount = backup.members.length;
+    const dateCount = Object.keys(backup.attendance).length;
+    if(!confirm(`Restore this backup?\n\n${memberCount} member(s) and attendance from ${dateCount} date(s) will replace the current data in this browser.\n\nMake sure you have exported your current data first if you need it.`)) return;
+
+    state.members = backup.members.map(m => ({
+      ...m,
+      ageGroup: m.ageGroup || m.group || 'Kids',
+      contact: m.contact || '',
+      address: m.address || '',
+      invitedBy: m.invitedBy || '',
+      regular: m.regular || 'Yes'
+    }));
+    if(!(await saveMembers())) throw new Error('Could not save member data.');
+    state.contacts = (backup.followupContacts && typeof backup.followupContacts === 'object') ? backup.followupContacts : {};
+    await saveFollowup();
+
+    // Clear existing attendance stored in the normal localStorage fallback.
+    const prefix = 'church-attendance:attendance:';
+    const oldKeys = [];
+    for(let i=0; i<localStorage.length; i++){
+      const k = localStorage.key(i);
+      if(k && k.startsWith(prefix)) oldKeys.push(k);
+    }
+    oldKeys.forEach(k => localStorage.removeItem(k));
+
+    const dates = Object.keys(backup.attendance).filter(Boolean).sort();
+    for(const dKey of dates){
+      await storageApi.set('attendance:'+dKey, JSON.stringify(Array.isArray(backup.attendance[dKey]) ? backup.attendance[dKey] : []));
+    }
+    await storageApi.set('attendanceDates', JSON.stringify(dates));
+
+    state.attendanceToday = await loadAttendance(state.todayKey);
+    rebuildMatcher();
+    renderMembers();
+    renderTodayList();
+    await loadReportForDate(document.getElementById('reportDate').value);
+    showBackupMessage('Backup restored successfully. ' + memberCount + ' members and ' + dateCount + ' attendance date(s) loaded.', 'ok');
+  }catch(e){
+    console.error('Backup import failed:', e);
+    showBackupMessage('Import failed: ' + (e.message || String(e)), 'err');
+  }
+}
+
+function downloadText(text, filename, type){
+  const blob = new Blob([text], {type});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url), 1000);
+}
+function showBackupMessage(text, kind=''){
+  const el = document.getElementById('backupMsg');
+  if(!el) return;
+  el.innerHTML = '<div class="msg '+(kind ? kind : '')+'">'+escapeHtml(text)+'</div>';
+  setTimeout(()=>{ if(el) el.innerHTML=''; }, 5000);
+}
+
+document.getElementById('exportMembersBtn').addEventListener('click', exportMembersCsv);
+document.getElementById('exportFollowupBtn2').addEventListener('click', exportFollowupCsv);
+document.getElementById('exportBackupBtn').addEventListener('click', exportFullBackup);
+document.getElementById('importBackupBtn').addEventListener('click', ()=>document.getElementById('importBackupInput').click());
+document.getElementById('importBackupInput').addEventListener('change', async e=>{
+  const file = e.target.files && e.target.files[0];
+  e.target.value = '';
+  await importFullBackup(file);
+});
 
 // ---------- Attendance reset ----------
 async function resetSelectedDate(){
@@ -2349,7 +2488,6 @@ async function resetSelectedDate(){
 }
 
 document.getElementById('resetDateBtn').addEventListener('click', resetSelectedDate);
-document.getElementById('exportFollowupReportBtn').addEventListener('click', exportFollowupReportCsv);
 
 function escapeHtml(s){
   return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -2704,22 +2842,6 @@ function exportFollowupCsv(){
   downloadText(csv, 'follow-ups-'+todayISO()+'.csv', 'text/csv;charset=utf-8');
 }
 
-function exportFollowupReportCsv(){
-  const dateEl=document.getElementById('fuReportDate');
-  const period=state.fuReportPeriod||'week';
-  const anchor=dateEl && dateEl.value ? dateEl.value : todayISO();
-  const data=fuReportRows(period,anchor);
-  if(!data.rows.length){ showToast('No follow-up records in this period.'); return; }
-  const rows=[['Date','Name','Group','How','Replied','What they said','Prayer request','Next follow-up','Last attended']];
-  data.rows.forEach(x=>{
-    const e=x.e, r=fuRec(x.m.id)||{};
-    rows.push([e.date,x.m.name||'',x.m.ageGroup||x.m.group||'',e.method||'',e.replied?'Yes':'No',e.reply||'',e.prayer||'',e.next||'',r.lastAttended||'']);
-  });
-  const csv='\ufeff'+rows.map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\r\n');
-  downloadText(csv,'follow-up-'+period+'-'+anchor+'.csv','text/csv;charset=utf-8');
-  showToast('Follow-up report exported.');
-}
-
 // ---------- Realtime sync (Supabase only) ----------
 // Keeps multiple devices in sync: when a follow-up, member edit, or
 // attendance record is saved on one phone/laptop, the others pick it up
@@ -2933,7 +3055,11 @@ async function init(){
   setupRealtimeSync();
   if(!usingSharedStorage){
     const n = document.getElementById('browserNotice');
-    if(n){ n.style.display='block'; n.className='msg err'; n.textContent='Supabase is required. Church data is not being stored in this browser.'; }
+    if(n && n.style.display !== 'block'){
+      n.style.display = 'block';
+      n.className = 'msg';
+      n.textContent = 'Saving to this device only right now — add your Supabase URL and key near the top of the code to sync across devices.';
+    }
   }
 }
 </script>
