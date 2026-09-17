@@ -373,20 +373,6 @@
   .fu-report-stat span{font-size:11px;color:var(--ink-light);}
   .fu-report-table{border:1px solid var(--line);overflow:auto;}
   .fu-report-table table{min-width:760px;margin:0;}
-  .fu-bulkbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:0 0 14px;padding:10px 12px;border:1px solid var(--line);background:var(--parchment);}
-  .fu-bulkbar .fu-selected-count{font-size:13px;color:var(--ink-light);}
-  .fu-bulk-actions{display:flex;gap:8px;flex-wrap:wrap;}
-  .fu-table-wrap{border:1px solid var(--line);overflow:auto;background:#fffdf8;}
-  .fu-table{min-width:780px;margin:0;}
-  .fu-table th,.fu-table td{padding:10px 11px;border-bottom:1px solid var(--line);font-size:12.5px;vertical-align:middle;}
-  .fu-table th{font-size:11.5px;text-transform:uppercase;letter-spacing:.03em;color:var(--ink-light);background:var(--parchment);white-space:nowrap;}
-  .fu-table tr:last-child td{border-bottom:none;}
-  .fu-table .fu-check{width:36px;text-align:center;}
-  .fu-table .fu-check input{width:16px;height:16px;accent-color:var(--ink);cursor:pointer;}
-  .fu-table .fu-name{font-weight:600;color:var(--ink);background:none;border:0;padding:0;cursor:pointer;font:inherit;text-align:left;}
-  .fu-table .fu-name:hover{text-decoration:underline;}
-  .fu-status{font-size:11.5px;font-weight:600;white-space:nowrap;}
-  .fu-status.due{color:var(--rust);} .fu-status.wait{color:var(--gold-dark);} .fu-status.replied{color:var(--ink);} .fu-status.back{color:var(--sage);}
   .fu-pagination{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px;font-size:12.5px;color:var(--ink-light);}
   .fu-pagination button{padding:6px 12px;font-size:12.5px;}
   .fu-entry-actions{float:right;margin-left:10px;}
@@ -878,7 +864,6 @@ const state = {
   fuPeopleLimit: 60,
   fuPageSize: 25,
   fuPages: { due:1, noreply:1, replied:1, back:1 },
-  fuSelected: new Set(),
   fuReportPeriod: 'week',
   fuReportPage: 1,
   memberSort: { key: 'name', dir: 'asc' },
@@ -2483,93 +2468,35 @@ function fuPaginationHtml(key,p){
     +'<button type="button" class="ghost" data-fu-prev="'+key+'" '+(p.page<=1?'disabled':'')+'>&laquo; Back</button>'
     +'<button type="button" class="ghost" data-fu-next="'+key+'" '+(p.page>=p.totalPages?'disabled':'')+'>Next &raquo;</button></div></div>';
 }
-function fuStatusLabel(m){
-  const b=fuBucket(m.id), last=fuLastEntry(m.id), r=fuRec(m.id);
-  if(b==='back') return '<span class="fu-status back">Came back</span>';
-  if(b==='replied') return '<span class="fu-status replied">Replied, not back</span>';
-  if(b==='noreply') return '<span class="fu-status wait">Waiting on a reply</span>';
-  if(fuIsDue(m.id)) return '<span class="fu-status due">Due</span>';
-  return last ? '<span class="fu-status">Follow-up logged</span>' : '<span style="color:var(--ink-light)">Not contacted</span>';
-}
-function fuFollowupStatus(m){
-  const b=fuBucket(m.id);
-  if(b==='back') return 'back';
-  if(b==='replied') return 'replied';
-  if(b==='noreply') return 'noreply';
-  if(fuIsDue(m.id)) return 'due';
-  return 'other';
-}
-function fuFollowupList(){
-  return fuActiveMembers().filter(m=>{
-    const r=fuRec(m.id);
-    return !!(fuLastEntry(m.id) || (r && r.lastAttended));
-  }).sort((a,b)=>{
-    const rank={back:3,replied:2,noreply:1,due:0,other:-1};
-    const ra=rank[fuFollowupStatus(a)], rb=rank[fuFollowupStatus(b)];
-    if(ra!==rb) return rb-ra;
-    const xa=fuLastEntry(a.id), xb=fuLastEntry(b.id);
-    return (xa&&xb) ? (xa.date<xb.date?1:-1) : 0;
-  });
-}
 function fuSectionPaged(title,hint,cls,key,list,emptyMsg){
   const p=fuPaginate(key,list);
   let h='<div class="fu-sec"><div class="fu-sec-h"><h3>'+title+'</h3><p>'+hint+'</p></div><div class="fu-rule '+cls+'"></div>';
-  if(!p.total) return h+'<div class="fu-empty">'+emptyMsg+'</div></div>';
-  const pageIds=p.items.map(m=>String(m.id));
-  const allPageSelected=pageIds.length>0 && pageIds.every(id=>state.fuSelected.has(id));
-  h+='<div class="fu-table-wrap"><table class="fu-table"><thead><tr>'
-    +'<th class="fu-check"><input type="checkbox" data-fu-select-page="all" '+(allPageSelected?'checked':'')+' aria-label="Select all on this page"></th>'
-    +'<th>Name</th><th>Group</th><th>Last follow-up</th><th>Status</th><th>Last attended</th></tr></thead><tbody>';
-  h+=p.items.map(m=>{
-    const r=fuRec(m.id), last=fuLastEntry(m.id), checked=state.fuSelected.has(String(m.id))?' checked':'';
-    return '<tr><td class="fu-check"><input type="checkbox" data-fu-select="'+escapeHtml(String(m.id))+'"'+checked+' aria-label="Select '+escapeHtml(m.name||'member')+'"></td>'
-      +'<td><button type="button" class="fu-name" data-fu-person="'+escapeHtml(String(m.id))+'">'+escapeHtml(m.name||'')+'</button></td>'
-      +'<td>'+escapeHtml(m.ageGroup||m.group||'')+'</td><td>'+escapeHtml(last?fuFmtFull(last.date):'Not contacted yet')+'</td>'
-      +'<td>'+fuStatusLabel(m)+'</td><td>'+escapeHtml(r&&r.lastAttended?fuFmtFull(r.lastAttended):'—')+'</td></tr>';
-  }).join('');
-  return h+'</tbody></table></div>'+fuPaginationHtml(key,p)+'</div>';
-}
-function fuSelectedIds(){ return Array.from(state.fuSelected).filter(id=>memberById(id)).map(String); }
-function fuUpdateBulkBar(){
-  const bar=document.getElementById('fuBulkBar'); if(!bar)return; const ids=fuSelectedIds();
-  bar.style.display=ids.length?'flex':'none'; const count=document.getElementById('fuSelectedCount'); if(count)count.textContent=ids.length+' selected';
-}
-function fuBindSelection(body){
-  body.querySelectorAll('[data-fu-select]').forEach(cb=>cb.addEventListener('change',()=>{
-    const id=String(cb.dataset.fuSelect); if(cb.checked)state.fuSelected.add(id);else state.fuSelected.delete(id); renderFollowup();
-  }));
-  body.querySelectorAll('[data-fu-select-page]').forEach(cb=>cb.addEventListener('change',()=>{
-    const list=fuFollowupList(), p=fuPaginate('all',list);
-    p.items.forEach(m=>{const id=String(m.id);if(cb.checked)state.fuSelected.add(id);else state.fuSelected.delete(id);}); renderFollowup();
-  }));
+  h += p.total ? p.items.map(m=>fuCard(m,key==='due'?'due '+fuFmt(fuNextDue(m.id)):key==='back'?'came '+fuFmt(fuRec(m.id).lastAttended):'')).join('') : '<div class="fu-empty">'+emptyMsg+'</div>';
+  h += fuPaginationHtml(key,p);
+  return h+'</div>';
 }
 function renderFollowup(){
-  const all=fuFollowupList();
-  const due=all.filter(m=>fuIsDue(m.id));
-  const noreply=all.filter(m=>fuFollowupStatus(m)==='noreply');
-  const replied=all.filter(m=>fuFollowupStatus(m)==='replied');
-  const back=all.filter(m=>fuFollowupStatus(m)==='back');
-  const badge=document.getElementById('followupTabCount'), n=due.length+noreply.length+replied.length;
+  const due=fuActiveMembers().filter(m=>fuIsDue(m.id));
+  const noreply=fuGroupOf('noreply'), replied=fuGroupOf('replied');
+  const back=fuGroupOf('back').filter(m=>fuDaysBetween(fuRec(m.id).lastAttended,todayISO())<=21);
+  const badge=document.getElementById('followupTabCount');
+  const n=due.length+noreply.length+replied.length;
   badge.textContent=n?String(n):'';
   const strip=document.getElementById('fuStrip');
-  strip.innerHTML=fuStat('noreply',noreply.length,'Waiting on a reply')+fuStat('replied',replied.length,'Replied, not back')+fuStat('back',back.length,'Came back');
+  strip.innerHTML=fuStat('due',due.length,'Due now')+fuStat('noreply',noreply.length,'No reply')+fuStat('replied',replied.length,'Replied, not back')+fuStat('back',back.length,'Came back');
   strip.querySelectorAll('[data-fu-focus]').forEach(b=>b.addEventListener('click',()=>{state.fuFocus=state.fuFocus===b.dataset.fuFocus?null:b.dataset.fuFocus;renderFollowup();}));
-  const body=document.getElementById('fuBody'), f=state.fuFocus;
-  let list=all;
-  if(f==='noreply') list=noreply;
-  else if(f==='replied') list=replied;
-  else if(f==='back') list=back;
-  else if(f==='due') list=due;
-  let out='<div class="fu-bulkbar" id="fuBulkBar" style="display:none;"><span class="fu-selected-count" id="fuSelectedCount">0 selected</span><div class="fu-bulk-actions"><button type="button" class="ghost" id="fuBulkLogBtn">Log a follow-up</button><button type="button" class="primary" id="fuBulkCameBtn">Came to church</button><button type="button" class="ghost" id="fuClearSelectedBtn">Clear</button></div></div>';
-  out+=fuSectionPaged('Follow-up list','select people below to log a follow-up or mark that they came to church','fu-r-replied','all',list,'No follow-up records found.');
+  renderFollowupReport();
+  const body=document.getElementById('fuBody'), f=state.fuFocus; let out='';
+  if(!f||f==='due') out+=fuSectionPaged('Due now','you planned to reach out by today','fu-r-due','due',due,'Nothing scheduled for today.');
+  if(!f||f==='noreply') out+=fuSectionPaged('Waiting on a reply','followed up, no answer yet','fu-r-noreply','noreply',noreply,'Everyone you followed up has answered.');
+  if(!f||f==='replied') out+=fuSectionPaged('Replied, not back yet','answered you, has not attended since','fu-r-replied','replied',replied,'No one is in this state right now.');
+  if(!f||f==='back') out+=fuSectionPaged('Came back','attended after your follow-up, in the last 3 weeks','fu-r-back','back',back,'No returns logged in the last 3 weeks.');
   body.innerHTML=out;
   body.querySelectorAll('[data-fu-person]').forEach(b=>b.addEventListener('click',()=>fuOpenPerson(b.dataset.fuPerson)));
+  body.querySelectorAll('[data-fu-log]').forEach(b=>b.addEventListener('click',()=>fuOpenLog(b.dataset.fuLog)));
+  body.querySelectorAll('[data-fu-came]').forEach(b=>b.addEventListener('click',()=>fuOpenCame(b.dataset.fuCame)));
   body.querySelectorAll('[data-fu-prev]').forEach(b=>b.addEventListener('click',()=>{const k=b.dataset.fuPrev;state.fuPages[k]=Math.max(1,(state.fuPages[k]||1)-1);renderFollowup();}));
   body.querySelectorAll('[data-fu-next]').forEach(b=>b.addEventListener('click',()=>{const k=b.dataset.fuNext;state.fuPages[k]=(state.fuPages[k]||1)+1;renderFollowup();}));
-  fuBindSelection(body); fuUpdateBulkBar();
-  document.getElementById('fuBulkLogBtn')?.addEventListener('click',()=>{const ids=fuSelectedIds();if(ids.length)fuOpenBulkLog(ids);});
-  document.getElementById('fuBulkCameBtn')?.addEventListener('click',()=>{const ids=fuSelectedIds();if(ids.length)fuOpenBulkCame(ids);});
-  document.getElementById('fuClearSelectedBtn')?.addEventListener('click',()=>{state.fuSelected.clear();renderFollowup();});
 }
 
 // ---------- Follow-up sheets (modal) ----------
@@ -2656,29 +2583,6 @@ function renderFollowupReport(){
   const size=25,totalPages=Math.max(1,Math.ceil(data.rows.length/size));state.fuReportPage=Math.min(Math.max(1,state.fuReportPage||1),totalPages);const start=(state.fuReportPage-1)*size,page=data.rows.slice(start,start+size);
   document.getElementById('fuReportTbody').innerHTML=page.map(x=>'<tr><td>'+escapeHtml(fuFmtFull(x.e.date))+'</td><td>'+escapeHtml(x.m.name||'')+'</td><td>'+escapeHtml(x.m.ageGroup||x.m.group||'')+'</td><td>'+escapeHtml(x.e.method||'')+'</td><td>'+escapeHtml(x.e.replied?'Yes':'No')+(x.e.reply?' · '+escapeHtml(x.e.reply):'')+'</td><td>'+escapeHtml(x.e.prayer||'')+'</td><td>'+escapeHtml(x.e.next?fuFmtFull(x.e.next):'')+'</td></tr>').join('');
   const pg=document.getElementById('fuReportPagination');pg.style.display=data.rows.length?'flex':'none';document.getElementById('fuReportPageInfo').textContent=data.rows.length?'Showing '+(start+1)+'–'+Math.min(start+size,data.rows.length)+' of '+data.rows.length:'';document.getElementById('fuReportPrevBtn').disabled=state.fuReportPage<=1;document.getElementById('fuReportNextBtn').disabled=state.fuReportPage>=totalPages;
-}
-
-function fuOpenBulkLog(ids){
-  fuOpenSheet('<h3>Log a follow-up</h3><div class="msg" style="border:none;background:none;padding:0;margin:-10px 0 14px;">This will be logged for <strong>'+ids.length+'</strong> selected people.</div>'
-    +'<div class="field"><label>Date</label><input type="date" id="fuDate" value="'+todayISO()+'"></div>'
-    +'<div class="field"><label>How</label><div class="fu-seg" id="fuMethod"><button data-m="Message" class="on" type="button">Message</button><button data-m="Call" type="button">Call</button><button data-m="Visit" type="button">Visit</button></div></div>'
-    +'<div class="field"><label>Did they reply?</label><div class="fu-seg" id="fuReplied"><button data-r="no" class="on" type="button">Not yet</button><button data-r="yes" type="button">Yes, they replied</button></div></div>'
-    +'<div class="field"><label for="fuReply">What they said</label><textarea id="fuReply" rows="3" style="width:100%;padding:9px 10px;border:1px solid var(--line);font-family:inherit;font-size:14.5px;"></textarea></div>'
-    +'<div class="field"><label for="fuPrayer">Prayer request</label><textarea id="fuPrayer" rows="2" style="width:100%;padding:9px 10px;border:1px solid var(--line);font-family:inherit;font-size:14.5px;"></textarea></div>'
-    +'<div class="field"><label for="fuNext">Follow up again on</label><input type="date" id="fuNext"></div>'
-    +'<div class="modal-actions"><button class="ghost" id="fuCancel">Cancel</button><button class="primary" id="fuSave">Save follow-up for '+ids.length+'</button></div>');
-  document.querySelectorAll('#fuMethod button,#fuReplied button').forEach(b=>b.addEventListener('click',()=>{b.parentElement.querySelectorAll('button').forEach(x=>x.classList.remove('on'));b.classList.add('on');}));
-  document.getElementById('fuCancel').addEventListener('click',fuCloseSheet);
-  document.getElementById('fuSave').addEventListener('click',async()=>{
-    const date=document.getElementById('fuDate').value||todayISO(),method=document.querySelector('#fuMethod .on').dataset.m,replied=document.querySelector('#fuReplied .on').dataset.r==='yes',reply=document.getElementById('fuReply').value.trim(),prayer=document.getElementById('fuPrayer').value.trim(),next=document.getElementById('fuNext').value||null;
-    ids.forEach(id=>{const r=fuRec(id)||{lastAttended:null,entries:[]};const copy={lastAttended:r.lastAttended,entries:Array.isArray(r.entries)?r.entries.slice():[]};copy.entries.push({id:'e'+Date.now()+'-'+id,date,method,replied,reply,prayer,next});state.contacts[id]=copy;});
-    const ok=await saveFollowup();if(!ok){alert('Could not save the follow-ups. Please try again.');return;}state.fuSelected.clear();fuCloseSheet();renderFollowup();showToast('Follow-up logged for '+ids.length+' people');
-  });
-}
-function fuOpenBulkCame(ids){
-  fuOpenSheet('<h3>Came to church</h3><div class="msg" style="border:none;background:none;padding:0;margin:-10px 0 14px;">This will mark <strong>'+ids.length+'</strong> selected people as having come to church.</div><div class="field"><label for="fuADate">Which Sunday</label><input type="date" id="fuADate" value="'+fuLastSunday()+'"></div><div class="modal-actions"><button class="ghost" id="fuCancel2">Cancel</button><button class="primary" id="fuSave2">Save for '+ids.length+'</button></div>');
-  document.getElementById('fuCancel2').addEventListener('click',fuCloseSheet);
-  document.getElementById('fuSave2').addEventListener('click',async()=>{const d=document.getElementById('fuADate').value||todayISO();for(const id of ids)await markFollowupAttendance(id,d,false);state.fuSelected.clear();fuCloseSheet();renderFollowup();showToast(ids.length+' people marked as back');});
 }
 
 function fuOpenLog(id){
