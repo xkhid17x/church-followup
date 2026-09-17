@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Follow-up — LCCB</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Public+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F3F5F0; --card:#FFFFFF; --ink:#16232E; --soft:#5C6B76; --line:#DFE4DD;
+  --navy:#1A4C7A; --navy-soft:#E6EDF4;
+  --sage:#2E6B52; --sage-soft:#E3EFE7;
+  --amber:#8F5B12; --amber-soft:#F6ECDA;
+  --rose:#8E2F38; --rose-soft:#F6E4E5;
+  --on-navy:#FFFFFF;
+  --shadow:0 1px 2px rgba(22,35,46,.08);
+  --r:12px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#111A20; --card:#18242C; --ink:#E8EEEA; --soft:#9AAAB4; --line:#27363F;
+    --navy:#7FB2DD; --navy-soft:#1B2F42;
+    --sage:#7FC69F; --sage-soft:#17332A;
+    --amber:#E0AC5E; --amber-soft:#332715;
+    --rose:#E8919A; --rose-soft:#381E22;
+    --on-navy:#0E1A22; --shadow:none;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#111A20; --card:#18242C; --ink:#E8EEEA; --soft:#9AAAB4; --line:#27363F;
+  --navy:#7FB2DD; --navy-soft:#1B2F42;
+  --sage:#7FC69F; --sage-soft:#17332A;
+  --amber:#E0AC5E; --amber-soft:#332715;
+  --rose:#E8919A; --rose-soft:#381E22;
+  --on-navy:#0E1A22; --shadow:none;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--paper); color:var(--ink);
+  font-family:"Public Sans", ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  font-size:16px; line-height:1.5; -webkit-text-size-adjust:100%;
+}
+h1,h2,h3{font-family:"Bricolage Grotesque","Public Sans",sans-serif; font-weight:700; margin:0; letter-spacing:-.01em}
+button,input,select,textarea{font:inherit; color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--navy); outline-offset:2px; border-radius:6px}
+.wrap{max-width:760px; margin:0 auto; padding:0 16px 120px}
+
+/* header */
+header{background:var(--card); border-bottom:1px solid var(--line); position:sticky; top:0; z-index:30}
+.hdr{max-width:760px; margin:0 auto; padding:14px 16px 0}
+.hdr h1{font-size:1.32rem; display:flex; align-items:baseline; gap:10px; flex-wrap:wrap}
+.week{font-family:"Public Sans"; font-weight:400; font-size:.86rem; color:var(--soft)}
+.tabs{display:flex; gap:2px; margin-top:12px; overflow-x:auto; scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{background:none; border:0; padding:9px 12px; color:var(--soft); font-weight:500; font-size:.94rem;
+  border-bottom:2px solid transparent; white-space:nowrap}
+.tab[aria-selected="true"]{color:var(--ink); border-bottom-color:var(--navy)}
+.tab .n{display:inline-block; min-width:20px; margin-left:5px; padding:0 6px; border-radius:20px;
+  background:var(--navy-soft); color:var(--navy); font-size:.76rem; font-weight:600}
+
+.banner{background:var(--amber-soft); color:var(--amber); font-size:.85rem; padding:8px 16px; text-align:center}
+
+/* strip */
+.strip{display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin:16px 0 8px}
+.stat{background:var(--card); border:1px solid var(--line); border-radius:var(--r); padding:10px 8px;
+  text-align:left; box-shadow:var(--shadow)}
+.stat b{display:block; font-family:"Bricolage Grotesque"; font-size:1.5rem; line-height:1.1}
+.stat span{font-size:.72rem; color:var(--soft); display:block; margin-top:2px}
+.stat.on{border-color:var(--navy); background:var(--navy-soft)}
+
+/* sections */
+section{margin-top:22px}
+.sec-h{display:flex; align-items:baseline; gap:8px; margin-bottom:4px}
+.sec-h h2{font-size:1.02rem}
+.sec-h p{margin:0; font-size:.82rem; color:var(--soft)}
+.rule{height:3px; border-radius:3px; margin:6px 0 10px}
+.r-due{background:var(--rose)} .r-noreply{background:var(--amber)}
+.r-replied{background:var(--navy)} .r-back{background:var(--sage)} .r-none{background:var(--line)}
+
+.card{background:var(--card); border:1px solid var(--line); border-radius:var(--r); padding:12px 14px;
+  margin-bottom:8px; box-shadow:var(--shadow)}
+.card .top{display:flex; justify-content:space-between; gap:10px; align-items:flex-start}
+.nm{font-weight:600; font-size:1rem; background:none; border:0; padding:0; text-align:left}
+.nm:hover{text-decoration:underline}
+.meta{font-size:.78rem; color:var(--soft); margin-top:1px; display:block}
+.when{font-size:.76rem; color:var(--soft); white-space:nowrap; padding-top:2px}
+.quote{margin:8px 0 0; font-size:.88rem; color:var(--soft); border-left:2px solid var(--line);
+  padding-left:10px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden}
+.acts{display:flex; gap:8px; margin-top:10px; flex-wrap:wrap}
+.btn{border:1px solid var(--line); background:var(--card); border-radius:9px; padding:7px 11px;
+  font-size:.85rem; font-weight:500}
+.btn:hover{border-color:var(--navy)}
+.btn.pri{background:var(--navy); border-color:var(--navy); color:var(--on-navy)}
+.btn.ok{background:var(--sage-soft); border-color:var(--sage-soft); color:var(--sage)}
+.pill{display:inline-block; font-size:.7rem; font-weight:600; padding:2px 7px; border-radius:20px; margin-left:6px}
+.p-due{background:var(--rose-soft); color:var(--rose)}
+.p-int{background:var(--amber-soft); color:var(--amber)}
+.p-in{background:var(--line); color:var(--soft)}
+
+.empty{background:var(--card); border:1px dashed var(--line); border-radius:var(--r); padding:16px;
+  color:var(--soft); font-size:.9rem}
+
+/* people */
+.search{display:flex; gap:8px; margin:16px 0 10px; position:sticky; top:96px; z-index:20}
+.search input{flex:1; padding:11px 13px; border:1px solid var(--line); border-radius:10px; background:var(--card)}
+.chips{display:flex; gap:6px; overflow-x:auto; padding-bottom:6px; scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{border:1px solid var(--line); background:var(--card); border-radius:20px; padding:6px 12px;
+  font-size:.83rem; white-space:nowrap; color:var(--soft)}
+.chip.on{background:var(--navy); border-color:var(--navy); color:var(--on-navy)}
+.row{display:flex; justify-content:space-between; align-items:center; gap:10px; width:100%;
+  background:var(--card); border:0; border-bottom:1px solid var(--line); padding:11px 14px; text-align:left}
+.list{border:1px solid var(--line); border-radius:var(--r); overflow:hidden; background:var(--card)}
+.row:last-child{border-bottom:0}
+.dot{width:8px; height:8px; border-radius:50%; flex:none}
+.d-due{background:var(--rose)} .d-noreply{background:var(--amber)} .d-replied{background:var(--navy)}
+.d-back{background:var(--sage)} .d-none{background:var(--line)}
+.count{font-size:.8rem; color:var(--soft); margin:10px 2px}
+
+/* week log */
+.day{font-size:.8rem; color:var(--soft); margin:16px 0 6px; font-weight:600}
+.entry{background:var(--card); border:1px solid var(--line); border-radius:var(--r); padding:11px 13px; margin-bottom:7px}
+
+/* modal */
+.scrim{position:fixed; inset:0; background:rgba(12,22,30,.5); display:flex; align-items:flex-end;
+  justify-content:center; z-index:60; padding:0}
+.sheet{background:var(--card); width:100%; max-width:640px; max-height:92vh; overflow:auto;
+  border-radius:18px 18px 0 0; padding:18px 18px calc(18px + env(safe-area-inset-bottom))}
+@media(min-width:640px){.scrim{align-items:center; padding:20px} .sheet{border-radius:16px}}
+.sheet h2{font-size:1.15rem}
+.sheet .sub{color:var(--soft); font-size:.85rem; margin:2px 0 14px}
+label{display:block; font-size:.82rem; font-weight:600; margin:14px 0 5px}
+input[type=text],input[type=date],textarea,select{width:100%; padding:10px 12px; border:1px solid var(--line);
+  border-radius:10px; background:var(--paper)}
+textarea{min-height:76px; resize:vertical; font-family:inherit}
+.seg{display:flex; gap:6px; flex-wrap:wrap}
+.seg button{flex:1; min-width:84px; border:1px solid var(--line); background:var(--paper); border-radius:10px; padding:9px}
+.seg button.on{background:var(--navy); border-color:var(--navy); color:var(--on-navy)}
+.sheet .foot{display:flex; gap:8px; margin-top:20px}
+.sheet .foot .btn{flex:1; padding:12px; text-align:center}
+.close{float:right; border:0; background:none; font-size:1.4rem; color:var(--soft); line-height:1; padding:0 4px}
+.tl{border-left:2px solid var(--line); margin:10px 0 0 6px; padding-left:14px}
+.tl .it{margin-bottom:14px; position:relative}
+.tl .it::before{content:""; position:absolute; left:-21px; top:6px; width:9px; height:9px; border-radius:50%;
+  background:var(--line); border:2px solid var(--card)}
+.tl .it.yes::before{background:var(--navy)} .tl .it.att::before{background:var(--sage)}
+.tl .dt{font-size:.78rem; color:var(--soft)}
+.tl .tx{font-size:.9rem; margin-top:2px; white-space:pre-wrap}
+.pray{font-size:.85rem; color:var(--amber); margin-top:4px}
+.fab{position:fixed; right:calc(50% - 380px + 16px); bottom:22px; z-index:40; border:0; border-radius:26px;
+  background:var(--navy); color:var(--on-navy); font-weight:600; padding:14px 20px; box-shadow:0 4px 14px rgba(22,35,46,.25)}
+@media(max-width:792px){.fab{right:16px}}
+.toast{position:fixed; left:50%; transform:translateX(-50%); bottom:88px; background:var(--ink); color:var(--paper);
+  padding:10px 16px; border-radius:10px; font-size:.88rem; z-index:80; opacity:0; transition:opacity .2s}
+.toast.on{opacity:1}
+@media (prefers-reduced-motion: reduce){*{transition:none!important; animation:none!important}}
+.hint{font-size:.8rem; color:var(--soft); margin-top:6px}
+</style>
+</head>
+<body>
+<header>
+  <div class="hdr">
+    <h1>Follow-up <span class="week" id="weekLabel"></span></h1>
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" data-view="followups" aria-selected="true">Who to follow up<span class="n" id="nFollow">0</span></button>
+      <button class="tab" role="tab" data-view="people" aria-selected="false">People</button>
+      <button class="tab" role="tab" data-view="week" aria-selected="false">This week<span class="n" id="nWeek">0</span></button>
+    </div>
+  </div>
+  <div class="banner" id="banner" hidden></div>
+</header>
+
+<main class="wrap" id="main"></main>
+<button class="fab" id="fab">Log a follow-up</button>
+<div class="toast" id="toast"></div>
+
+<script>
+const ROSTER = [{"id": "ailyn-dolotallas", "name": "Ailyn Dolotallas", "area": "Molino 4", "group": "Ladies", "role": "Leader", "flag": ""}, {"id": "emy-cruz", "name": "Emy Cruz", "area": "Molino 1", "group": "Ladies", "role": "Elder", "flag": ""}, {"id": "fe-morales", "name": "Fe Morales", "area": "Maliksi 1", "group": "Ladies", "role": "Elder", "flag": ""}, {"id": "jasmine-cano", "name": "Jasmine Cano", "area": "Panapaan 1", "group": "Ladies", "role": "Elder", "flag": ""}, {"id": "jerlyn-quezada", "name": "Jerlyn Quezada", "area": "Maliksi 1", "group": "Ladies", "role": "Volunteer", "flag": "Inactive"}, {"id": "nerrisa-cruz", "name": "Nerrisa Cruz", "area": "Villamor Pasay", "group": "Ladies", "role": "Elder", "flag": ""}, {"id": "teck-cruz", "name": "Teck Cruz", "area": "Villamor Pasay", "group": "Ladies", "role": "Elder", "flag": ""}, {"id": "virgie-jimenez", "name": "Virgie Jimenez", "area": "Maliksi 1", "group": "Ladies", "role": "Elder", "flag": ""}, {"id": "darius-cruz", "name": "Darius Cruz", "area": "Villamor Pasay", "group": "Men", "role": "Elder", "flag": ""}, {"id": "gerry-concepcion", "name": "Gerry Concepcion", "area": "Binakayan", "group": "Men", "role": "Elder", "flag": ""}, {"id": "grenan-ilagan", "name": "Grenan Ilagan", "area": "Imus", "group": "Men", "role": "Pastor", "flag": ""}, {"id": "lawrence-badi", "name": "Lawrence Badi", "area": "Block 20 Lot 7 Topaz St. Ridgecrest Summit Brgy. Pasong Buaya 2 Imus, Cavite", "group": "Men", "role": "Elder", "flag": ""}, {"id": "rosendo-jimenez", "name": "Rosendo Jimenez", "area": "Maliksi 1", "group": "Men", "role": "Elder", "flag": ""}, {"id": "angelica-temporal", "name": "Angelica Temporal", "area": "Molino 2", "group": "Yamo", "role": "Leader", "flag": ""}, {"id": "bryan-tangonan", "name": "Bryan Tangonan", "area": "San Nicolas 1", "group": "Yamo", "role": "Pastor", "flag": ""}, {"id": "dan-leuterio", "name": "Dan Leuterio", "area": "Dasmarinas", "group": "Yamo", "role": "Leader", "flag": ""}, {"id": "gen-juntilla", "name": "Gen Juntilla", "area": "Bayanan", "group": "Yamo", "role": "Pastor's Wife", "flag": ""}, {"id": "ichan-juntilla", "name": "Ichan Juntilla", "area": "Bayanan", "group": "Yamo", "role": "Pastor", "flag": ""}, {"id": "jed-castro", "name": "Jed Castro", "area": "Villamor Pasay", "group": "Yamo", "role": "Leader", "flag": ""}, {"id": "jezel-villalobos", "name": "Jezel Villalobos", "area": "Bayanan", "group": "Yamo", "role": "Volunteer", "flag": ""}, {"id": "joshua-lavapie", "name": "Joshua Lavapie", "area": "Molino 2", "group": "Yamo", "role": "Pastor", "flag": ""}, {"id": "jun-rupa", "name": "Jun Rupa", "area": "BF Laspinas", "group": "Men", "role": "Pastor", "flag": ""}, {"id": "lalaine-ann-bolocon", "name": "Lalaine Ann Bolocon", "area": "BF Paranaque", "group": "Yamo", "role": "Leader", "flag": ""}, {"id": "ronnie-daguio", "name": "Ronnie Daguio", "area": "Molino 3", "group": "Yamo", "role": "Leader", "flag": ""}, {"id": "rosevie-flores", "name": "Rosevie Flores", "area": "Maliksi 1", "group": "Yamo", "role": "Leader", "flag": ""}, {"id": "sam-rupa", "name": "Sam Rupa", "area": "BF Laspinas", "group": "Ladies", "role": "Volunteer", "flag": ""}, {"id": "sheena-lavapie", "name": "Sheena Lavapie", "area": "Molino 2", "group": "Yamo", "role": "Pastor's Wife", "flag": ""}, {"id": "tin-lavapie", "name": "Tin Lavapie", "area": "Buhay na Tubig Imus", "group": "Yamo", "role": "Leader", "flag": ""}, {"id": "aiesha-sales", "name": "Aiesha Sales", "area": "B11 L8 Galicia st. Bellazona Aragon Subd.Bgy Molino 3 Bacoor Cavite", "group": "Youth", "role": "Leader", "flag": ""}, {"id": "allen-panganiban", "name": "Allen Panganiban", "area": "Bayanan", "group": "Youth", "role": "Leader", "flag": ""}, {"id": "andee-peralta", "name": "Andee Peralta", "area": "BF Laspinas", "group": "Youth", "role": "Leader", "flag": ""}, {"id": "april-jimenez", "name": "April Jimenez", "area": "Maliksi 1", "group": "Yamo", "role": "Leader", "flag": ""}, {"id": "auriyah-sales", "name": "Auriyah Sales", "area": "B11 L8 Galicia st. Bellazona Aragon Subd.Bgy Molino 3 Bacoor Cavite", "group": "Youth", "role": "Leader", "flag": ""}, {"id": "basti-jacinto", "name": "Basti Jacinto", "area": "Pasay", "group": "Youth", "role": "Leader", "flag": ""}, {"id": "benjie-ogano", "name": "Benjie Ogano", "area": "Kawit", "group": "Youth", "role": "Leader", "flag": "Inactive"}, {"id": "ian-casa", "name": "Ian Casa", "area": "Molino 3", "group": "Yamo", "role": "Volunteer", "flag": ""}, {"id": "jeanelle-panganiban", "name": "Jeanelle Panganiban", "area": "Bayanan", "group": "Youth", "role": "Leader", "flag": ""}, {"id": "kiko-peralta", "name": "Kiko Peralta", "area": "BF Laspinas", "group": "Youth", "role": "Pastor", "flag": ""}, {"id": "lorelei-flores", "name": "Lorelei Flores", "area": "Bayanan", "group": "Youth", "role": "Leader", "flag": ""}, {"id": "paolo-coyoca", "name": "Paolo Coyoca", "area": "Molino 1", "group": "Yamo", "role": "Leader", "flag": "Inactive"}, {"id": "shayne-badi", "name": "Shayne Badi", "area": "Block 20 Lot 7 Topaz St. Ridgecrest Summit Brgy. Pasong Buaya 2 Imus, Cavite", "group": "Youth", "role": "Leader", "flag": ""}, {"id": "adam-dolotallas", "name": "Adam Dolotallas", "area": "Molino 4", "group": "Kids", "role": "Member", "flag": ""}, {"id": "adriana", "name": "Adriana", "area": "", "group": "", "role": "", "flag": ""}, {"id": "alisha", "name": "Alisha", "area": "", "group": "", "role": "", "flag": ""}, {"id": "andrei-lataoan", "name": "Andrei Lataoan", "area": "San Nicolas 3, Bacoor, Cavite", "group": "Kids", "role": "Member", "flag": ""}, {"id": "ashanty-salac", "name": "Ashanty Salac", "area": "Maliksi 1", "group": "Kids", "role": "Member", "flag": ""}, {"id": "caleb-balmeo", "name": "Caleb Balmeo", "area": "San Nicolas 1", "group": "Kids", "role": "Member", "flag": ""}, {"id": "cici", "name": "Cici", "area": "", "group": "", "role": "", "flag": ""}, {"id": "cymon", "name": "Cymon", "area": "", "group": "", "role": "", "flag": ""}, {"id": "daniel-kieran-morales", "name": "Daniel Kieran Morales", "area": "Maliksi 1", "group": "", "role": "", "flag": ""}, {"id": "emzel", "name": "Emzel", "area": "", "group": "", "role": "", "flag": ""}, {"id": "ezekiel", "name": "Ezekiel", "area": "", "group": "", "role": "", "flag": ""}, {"id": "faith", "name": "Faith", "area": "", "group": "", "role": "", "flag": ""}, {"id": "isaiah-reign-ilagan", "name": "Isaiah Reign Ilagan", "area": "Imus", "group": "Kids", "role": "Member", "flag": ""}, {"id": "ivana", "name": "Ivana", "area": "Bayanan", "group": "Kids", "role": "Member", "flag": ""}, {"id": "jana", "name": "Jana", "area": "Molino 1", "group": "Kids", "role": "Member", "flag": ""}, {"id": "jasper-sabsalon", "name": "Jasper Sabsalon", "area": "", "group": "", "role": "", "flag": ""}, {"id": "jazel-anne-ricaforte", "name": "Jazel Anne Ricaforte", "area": "", "group": "", "role": "", "flag": ""}, {"id": "jaznie-ricaforte", "name": "Jaznie Ricaforte", "area": "", "group": "", "role": "", "flag": ""}, {"id": "jerome-sabsalon", "name": "Jerome Sabsalon", "area": "", "group": "", "role": "", "flag": ""}, {"id": "jhay-r-casilao", "name": "Jhay-r Casilao", "area": "", "group": "", "role": "", "flag": ""}, {"id": "joaquin-canaynay", "name": "Joaquin Canaynay", "area": "BF Laspinas", "group": "", "role": "", "flag": ""}, {"id": "john-zyler-rodriguez", "name": "John Zyler Rodriguez", "area": "", "group": "", "role": "", "flag": ""}, {"id": "kelie-ainjel-cabiles", "name": "Kelie Ainjel Cabiles", "area": "San Nicolas 1", "group": "", "role": "", "flag": ""}, {"id": "kylie-velasquez", "name": "Kylie Velasquez", "area": "", "group": "", "role": "", "flag": ""}, {"id": "lacey-de-castro", "name": "Lacey De Castro", "area": "Bayanan", "group": "", "role": "", "flag": ""}, {"id": "lucas-de-castro", "name": "Lucas De Castro", "area": "Bayanan", "group": "", "role": "", "flag": ""}, {"id": "luis-velasquez", "name": "Luis Velasquez", "area": "", "group": "", "role": "", "flag": ""}, {"id": "lukas-ainjel-cabiles", "name": "Lukas Ainjel Cabiles", "area": "San Nicolas 1", "group": "Kids", "role": "Member", "flag": ""}, {"id": "lukkas-lavapie", "name": "Lukkas Lavapie", "area": "Buhay na Tubig, Imus", "group": "Kids", "role": "Member", "flag": ""}, {"id": "mhicaella-velasquez", "name": "Mhicaella Velasquez", "area": "", "group": "", "role": "", "flag": ""}, {"id": "mikee-velasquez", "name": "Mikee Velasquez", "area": "", "group": "", "role": "", "flag": ""}, {"id": "mizzy-klare-grama", "name": "Mizzy Klare Grama", "area": "Bayanan", "group": "", "role": "", "flag": ""}, {"id": "noah-yubili", "name": "Noah Yubili", "area": "", "group": "", "role": "", "flag": ""}, {"id": "princess-baisas", "name": "Princess Baisas", "area": "Molino 1", "group": "", "role": "", "flag": ""}, {"id": "raynelyn-ugalde", "name": "Raynelyn Ugalde", "area": "", "group": "", "role": "", "flag": ""}, {"id": "sam-lavapie", "name": "Sam Lavapie", "area": "Imus", "group": "", "role": "", "flag": ""}, {"id": "sean-delos-santos", "name": "Sean Delos Santos", "area": "", "group": "", "role": "", "flag": ""}, {"id": "serena", "name": "Serena", "area": "", "group": "", "role": "", "flag": ""}, {"id": "steve-delos-santos", "name": "Steve Delos Santos", "area": "", "group": "", "role": "", "flag": ""}, {"id": "summer-riley-abellana", "name": "Summer Riley Abellana", "area": "Villamor Pasay", "group": "", "role": "", "flag": ""}, {"id": "taki-velasquez", "name": "Taki Velasquez", "area": "", "group": "", "role": "", "flag": ""}, {"id": "thomas-montemolin", "name": "Thomas Montemolin", "area": "Molino 3", "group": "", "role": "", "flag": ""}, {"id": "timothy-mochi", "name": "Timothy (Mochi)", "area": "Kawit", "group": "", "role": "", "flag": ""}, {"id": "timothy-casabuena", "name": "Timothy Casabuena", "area": "Molino 3", "group": "", "role": "", "flag": ""}, {"id": "xavier", "name": "Xavier", "area": "", "group": "", "role": "", "flag": ""}, {"id": "zachy-dolotallas", "name": "Zachy Dolotallas", "area": "Molino 4", "group": "Kids", "role": "Member", "flag": ""}, {"id": "zayne-keniel-villalobos", "name": "Zayne Keniel Villalobos", "area": "Bayanan", "group": "Kids", "role": "Member", "flag": ""}, {"id": "zhanie-dato", "name": "Zhanie Dato", "area": "Dulong Bayan", "group": "Kids", "role": "Member", "flag": ""}, {"id": "aiza-roque", "name": "Aiza Roque", "area": "Molino 3", "group": "Ladies", "role": "Volunteer", "flag": ""}, {"id": "angie-jaro", "name": "Angie Jaro", "area": "Molino 1", "group": "Ladies", "role": "Member", "flag": ""}, {"id": "catherine-naui", "name": "Catherine Naui", "area": "BF Homes Parañaque", "group": "Ladies", "role": "Member", "flag": ""}, {"id": "cristina-arenio", "name": "Cristina Arenio", "area": "Molino 1 Bacoor, Cavite", "group": "Ladies", "role": "Member", "flag": ""}, {"id": "diana-casabuena", "name": "Diana Casabuena", "area": "Molino 3", "group": "Ladies", "role": "Member", "flag": ""}, {"id": "diane-manuel", "name": "Diane Manuel", "area": "Bahayang Pag-Asa, Imus, Cavite", "group": "Ladies", "role": "Member", "flag": ""}, {"id": "editha-alvarez", "name": "Editha Alvarez", "area": "Timbang Compound, Mambog, Bacoor, Cavite", "group": "Ladies", "role": "Member", "flag": ""}, {"id": "emerlinda-arevalo", "name": "Emerlinda Arevalo", "area": "Mambog 2, Bacoor, Cavite", "group": "Ladies", "role": "Member", "flag": ""}, {"id": "evelynda-medina", "name": "Evelynda Medina", "area": "Molino 1", "group": "Ladies", "role": "Member", "flag": ""}, {"id": "francisca-aserios", "name": "Francisca Aserios", "area": "", "group": "Ladies", "role": "Member", "flag": ""}, {"id": "gee-balmeo", "name": "Gee Balmeo", "area": "San Nicolas 1", "group": "Ladies", "role": "Member", "flag": ""}, {"id": "jane-dioso", "name": "Jane Dioso", "area": "El Grande Homes, Molino 6, Bacoor, Cavite", "group": "Ladies", "role": "Member", "flag": ""}, {"id": "jeanette-dordas", "name": "Jeanette Dordas", "area": "Mambog 4, Bacoor Cavite", "group": "Ladies", "role": "Member", "flag": ""}, {"id": "joly-veluz", "name": "Joly Veluz", "area": "Progressive 8, Molino 1, Bacoor, Cavite", "group": "Ladies", "role": "Member", "flag": ""}, {"id": "jon-jon-san-agustin", "name": "Jon Jon San Agustin", "area": "Bayanan, Bacoor, Cavite", "group": "Men", "role": "Member", "flag": ""}, {"id": "jonalyn-baran", "name": "Jonalyn Baran", "area": "Molino 1, Bacoor, Cavite", "group": "Ladies", "role": "Member", "flag": ""}, {"id": "joy-lataoan", "name": "Joy Lataoan", "area": "San Nicolas 3, Bacoor, Cavite", "group": "Ladies", "role": "Member", "flag": ""}, {"id": "lourdes-rafael", "name": "Lourdes Rafael", "area": "Soldiers Hills 4, Molino 4, Bacoor Cavite", "group": "Ladies", "role": "Member", "flag": ""}, {"id": "lourdes-sioco", "name": "Lourdes Sioco", "area": "Mambog 3, Bacoor, Cavite", "group": "Ladies", "role": "Member", "flag": ""}, {"id": "mae-lavapie", "name": "Mae Lavapie", "area": "Imus", "group": "Yamo", "role": "Volunteer", "flag": ""}, {"id": "mercy-nicolas", "name": "Mercy Nicolas", "area": "Bayanan, Bacoor, Cavite", "group": "Ladies", "role": "Member", "flag": ""}, {"id": "mercy-oliva", "name": "Mercy Oliva", "area": "Bayanan, Bacoor, Cavite", "group": "Ladies", "role": "Member", "flag": "Inactive"}, {"id": "merlita-lopez", "name": "Merlita Lopez", "area": "Maliksi 1", "group": "Ladies", "role": "Member", "flag": "Inactive"}, {"id": "nena-castillo", "name": "Nena Castillo", "area": "Maliksi 1", "group": "Ladies", "role": "Member", "flag": ""}, {"id": "nita-baisas", "name": "Nita Baisas", "area": "Ciudad de Strike, Molino 1 Bacoor, Cavite", "group": "Ladies", "role": "Member", "flag": ""}, {"id": "noralyn-morales", "name": "Noralyn Morales", "area": "1225 Maliksi 3, Bacoor", "group": "Ladies", "role": "Member", "flag": ""}, {"id": "perlyn-dela-cerna", "name": "Perlyn Dela Cerna", "area": "Molino 1", "group": "Ladies", "role": "Member", "flag": ""}, {"id": "rhea-andales", "name": "Rhea Andales", "area": "Soldiers Hills 4, Molino 4, Bacoor Cavite", "group": "Ladies", "role": "Member", "flag": ""}, {"id": "arturo-veluz", "name": "Arturo Veluz", "area": "Progressive 8, Molino 1, Bacoor, Cavite", "group": "Men", "role": "Member", "flag": ""}, {"id": "denver-garcia", "name": "Denver Garcia", "area": "Bayanan", "group": "Men", "role": "Member", "flag": ""}, {"id": "ed-custer-balmeo", "name": "Ed Custer Balmeo", "area": "San Nicolas 1", "group": "Men", "role": "Member", "flag": ""}, {"id": "edgar-alvarez", "name": "Edgar Alvarez", "area": "Timbang Compound, Mambog, Bacoor, Cavite", "group": "Men", "role": "Member", "flag": "Inactive"}, {"id": "francis-baisas", "name": "Francis Baisas", "area": "Ciudad de Strike, Molino 1 Bacoor, Cavite", "group": "Men", "role": "Member", "flag": ""}, {"id": "imman-dolotallas", "name": "Imman Dolotallas", "area": "Molino 4", "group": "Men", "role": "Volunteer", "flag": ""}, {"id": "joel-symphony-dioso", "name": "Joel Symphony Dioso", "area": "El Grande Homes, Molino 6, Bacoor, Cavite", "group": "Men", "role": "Member", "flag": ""}, {"id": "jorge-roque", "name": "Jorge Roque", "area": "Molino 3, Bacoor Cavite", "group": "Men", "role": "Volunteer", "flag": ""}, {"id": "manny-morales-nonong", "name": "Manny Morales - Nonong", "area": "1225 Maliksi 3, Bacoor", "group": "Men", "role": "Member", "flag": ""}, {"id": "melencio-montemolin", "name": "Melencio Montemolin", "area": "Molino 3, Bacoor Cavite", "group": "Men", "role": "Member", "flag": ""}, {"id": "melvin-casabuena", "name": "Melvin Casabuena", "area": "Molino 3, Bacoor Cavite", "group": "Men", "role": "Volunteer", "flag": ""}, {"id": "moneth-arenio", "name": "Moneth Arenio", "area": "Molino 1", "group": "Men", "role": "Member", "flag": ""}, {"id": "rene-dordas", "name": "Rene Dordas", "area": "Mambog 4, Bacoor Cavite", "group": "Men", "role": "Volunteer", "flag": ""}, {"id": "ricardo-acosta", "name": "Ricardo Acosta", "area": "Maliksi 1", "group": "Men", "role": "Volunteer", "flag": ""}, {"id": "rocell-palmera", "name": "Rocell Palmera", "area": "Molino 1", "group": "Men", "role": "Member", "flag": ""}, {"id": "rocky-troy-naui", "name": "Rocky Troy Naui", "area": "BF Homes Parañaque", "group": "Men", "role": "Member", "flag": ""}, {"id": "alwyn-marchan", "name": "Alwyn Marchan", "area": "Imus", "group": "Yamo", "role": "Member", "flag": ""}, {"id": "april-joy-adi", "name": "April Joy Adi", "area": "Bayanan, Bacoor, Cavite", "group": "Yamo", "role": "Member", "flag": ""}, {"id": "arnel-saragosa", "name": "Arnel Saragosa", "area": "", "group": "Yamo", "role": "Member", "flag": "Inactive"}, {"id": "berea-ramos", "name": "Berea Ramos", "area": "Green Breeze, Bayanan, Bacoor, Cavite", "group": "Yamo", "role": "Member", "flag": "Inactive"}, {"id": "carlo-louie-rama-abas", "name": "Carlo Louie Rama Abas", "area": "Molino 2", "group": "Yamo", "role": "Member", "flag": ""}, {"id": "cristina-dato", "name": "Cristina Dato", "area": "", "group": "Yamo", "role": "Member", "flag": "Inactive"}, {"id": "dan-morales", "name": "Dan Morales", "area": "1225 Maliksi 3, Bacoor", "group": "Men", "role": "Member", "flag": ""}, {"id": "denzel-lauzon", "name": "Denzel Lauzon", "area": "Bayanan, Bacoor, Cavite", "group": "Yamo", "role": "Member", "flag": ""}, {"id": "eulhiz-vega", "name": "Eulhiz Vega", "area": "Molino 4", "group": "Yamo", "role": "Volunteer", "flag": ""}, {"id": "floricar-abas", "name": "Floricar Abas", "area": "Molino 2, Bacoor, Cavite", "group": "Yamo", "role": "Member", "flag": ""}, {"id": "genesis-veluz", "name": "Genesis Veluz", "area": "Progressive Village, Molino I, Bacoor, Cavite", "group": "Yamo", "role": "Member", "flag": ""}, {"id": "geo-malinis", "name": "Geo Malinis", "area": "Mambog 1, Bacoor, Cavite", "group": "Yamo", "role": "Member", "flag": "Inactive"}, {"id": "gezel-ruth-yap", "name": "Gezel Ruth Yap", "area": "San Nicolas 1, Bacoor Cavite", "group": "Yamo", "role": "Member", "flag": ""}, {"id": "jemalyn-marchan", "name": "Jemalyn Marchan", "area": "Imus", "group": "Yamo", "role": "Member", "flag": ""}, {"id": "john-carlo-dela-cruz", "name": "John Carlo Dela Cruz", "area": "Navotas", "group": "Yamo", "role": "Member", "flag": ""}, {"id": "joven-vega", "name": "Joven Vega", "area": "Molino 4", "group": "Yamo", "role": "Member", "flag": ""}, {"id": "julius-syfu", "name": "Julius Syfu", "area": "", "group": "Yamo", "role": "Member", "flag": ""}, {"id": "karlo-morales", "name": "Karlo Morales", "area": "1225 Maliksi 3, Bacoor", "group": "Yamo", "role": "Member", "flag": ""}, {"id": "kate-tupaz", "name": "Kate Tupaz", "area": "", "group": "Yamo", "role": "Member", "flag": "Inactive"}, {"id": "kean-rian-benting", "name": "Kean Rian Benting", "area": "Molino 1", "group": "Yamo", "role": "Member", "flag": "Inactive"}, {"id": "keith-son-martinez", "name": "Keith Son Martinez", "area": "San Nicolas 3, Bacoor, Cavite", "group": "Men", "role": "Member", "flag": ""}, {"id": "kim-nicol", "name": "Kim Nicol", "area": "Maliksi 1", "group": "Yamo", "role": "Volunteer", "flag": ""}, {"id": "maico", "name": "Maico", "area": "Laspinas", "group": "Yamo", "role": "Member", "flag": "Inactive"}, {"id": "miguel-morales", "name": "Miguel Morales", "area": "1225 Maliksi 3, Bacoor", "group": "Yamo", "role": "Member", "flag": ""}, {"id": "nathaniel-bocaling", "name": "Nathaniel Bocaling", "area": "Langkaan 1 Dasmarinas", "group": "Yamo", "role": "Member", "flag": ""}, {"id": "nicole-garcia", "name": "Nicole Garcia", "area": "Molino 2", "group": "Yamo", "role": "Member", "flag": ""}, {"id": "patrice-balede", "name": "Patrice Balede", "area": "Soldiers 4, Molino 4 Bacoor, Cavite", "group": "Yamo", "role": "Member", "flag": ""}, {"id": "peng-lb", "name": "Peng LB", "area": "Laspinas", "group": "Yamo", "role": "Member", "flag": "Inactive"}, {"id": "razzel-bocaling", "name": "Razzel Bocaling", "area": "Langkaan 1 Dasmarinas", "group": "Yamo", "role": "Member", "flag": ""}, {"id": "rohm-john-fullos", "name": "Rohm John Fullos", "area": "Pasay City", "group": "Yamo", "role": "Volunteer", "flag": ""}, {"id": "shenna-mae-ferrer", "name": "Shenna Mae Ferrer", "area": "San Nicolas 3, Bacoor, Cavite", "group": "Ladies", "role": "Member", "flag": ""}, {"id": "sunshine-gezel-ruth-yap", "name": "Sunshine Gezel Ruth Yap", "area": "San Nicolas 1, Bacoor Cavite", "group": "Yamo", "role": "Member", "flag": ""}, {"id": "wesley-tumesa-andres", "name": "Wesley Tumesa Andres", "area": "Bayanan", "group": "Yamo", "role": "Member", "flag": "Inactive"}, {"id": "adrian-dumagtoy", "name": "Adrian Dumagtoy", "area": "Timbang, Mambog 3", "group": "Youth", "role": "Member", "flag": "Inactive"}, {"id": "aki-roque", "name": "Aki Roque", "area": "Molino 3", "group": "Youth", "role": "Volunteer", "flag": ""}, {"id": "aldrich-montemolin", "name": "Aldrich Montemolin", "area": "Molino 3", "group": "Youth", "role": "Member", "flag": ""}, {"id": "althea-brielle-benavidez", "name": "Althea Brielle Benavidez", "area": "Kawit", "group": "Youth", "role": "Member", "flag": ""}, {"id": "alyza-manuel", "name": "Alyza Manuel", "area": "Bahayang Pag-Asa Imus, Cavite", "group": "Youth", "role": "Member", "flag": "Inactive"}, {"id": "amirah-sales", "name": "Amirah Sales", "area": "B11 L8 Galicia st. Bellazona Aragon Subd.Bgy Molino 3 Bacoor Cavite", "group": "Youth", "role": "Member", "flag": ""}, {"id": "aquila-ilagan", "name": "Aquila Ilagan", "area": "Imus", "group": "Kids", "role": "Member", "flag": ""}, {"id": "ariel-abigail-abejar", "name": "Ariel Abigail Abejar", "area": "San Nicolas 1, Bacoor Cavite", "group": "Youth", "role": "Volunteer", "flag": ""}, {"id": "belle", "name": "Belle", "area": "", "group": "", "role": "", "flag": ""}, {"id": "benjie", "name": "Benjie", "area": "", "group": "", "role": "", "flag": ""}, {"id": "clyde-mediavillo", "name": "Clyde Mediavillo", "area": "Molino 4", "group": "Youth", "role": "Volunteer", "flag": ""}, {"id": "eddard-shailene-badi", "name": "Eddard Shailene Badi", "area": "Block 20 Lot 7 Topaz St. Ridgecrest Summit Brgy. Pasong Buaya 2 Imus, Cavite", "group": "Kids", "role": "Member", "flag": ""}, {"id": "edmond", "name": "Edmond", "area": "Timbang, Mambog 3", "group": "Kids", "role": "Member", "flag": ""}, {"id": "edward-pelayo", "name": "Edward Pelayo", "area": "Timbang, Mambog 3", "group": "Youth", "role": "Member", "flag": ""}, {"id": "eirham-casilao", "name": "Eirham Casilao", "area": "Maliksi 1", "group": "Kids", "role": "Member", "flag": ""}, {"id": "empress-manuel", "name": "Empress Manuel", "area": "Bayanan", "group": "Youth", "role": "Member", "flag": ""}, {"id": "eric-timbang", "name": "Eric (Timbang)", "area": "Molino 3", "group": "Youth", "role": "Member", "flag": "Inactive"}, {"id": "florence-zara-veluz", "name": "Florence Zara Veluz", "area": "Progressive 8, Molino 1, Bacoor, Cavite", "group": "Youth", "role": "Member", "flag": ""}, {"id": "francheska-ramos", "name": "Francheska Ramos", "area": "Green Breeze, Bayanan, Bacoor, Cavite", "group": "Youth", "role": "Member", "flag": ""}, {"id": "gab-gacuan", "name": "Gab Gacuan", "area": "Imus", "group": "Youth", "role": "Member", "flag": ""}, {"id": "ghasper-balsamo", "name": "Ghasper Balsamo", "area": "Molino 4", "group": "Youth", "role": "Member", "flag": ""}, {"id": "ging-ging-butalid", "name": "Ging-ging Butalid", "area": "Bayanan", "group": "Youth", "role": "Member", "flag": ""}, {"id": "grace-joy-baisas", "name": "Grace Joy Baisas", "area": "Ciudad de Strike, Molino 1 Bacoor, Cavite", "group": "Youth", "role": "Member", "flag": ""}, {"id": "haile-symphony-dioso", "name": "Haile Symphony Dioso", "area": "El Grande Homes, Molino 6, Bacoor, Cavite", "group": "Youth", "role": "Member", "flag": ""}, {"id": "harmony-anne-dioso", "name": "Harmony Anne Dioso", "area": "El Grande Homes, Molino 6, Bacoor, Cavite", "group": "Youth", "role": "Member", "flag": ""}, {"id": "herlyn-yubili", "name": "Herlyn Yubili", "area": "", "group": "", "role": "", "flag": ""}, {"id": "hymn-cedric-dioso", "name": "Hymn Cedric Dioso", "area": "El Grande Homes, Molino 6, Bacoor, Cavite", "group": "Youth", "role": "Member", "flag": ""}, {"id": "ian-carilla-casabuena", "name": "Ian Carilla Casabuena", "area": "Molino 3", "group": "Kids", "role": "Member", "flag": ""}, {"id": "isabella-veluz", "name": "Isabella Veluz", "area": "Progressive 8, Molino 1, Bacoor, Cavite", "group": "Youth", "role": "Member", "flag": ""}, {"id": "jason", "name": "Jason", "area": "", "group": "", "role": "", "flag": ""}, {"id": "jayme-peralta", "name": "Jayme Peralta", "area": "Pampanga", "group": "Youth", "role": "Member", "flag": ""}, {"id": "jayson-eligoyo", "name": "Jayson Eligoyo", "area": "Green Valley, Molino 2, Bacoor, Cavite", "group": "Youth", "role": "Member", "flag": ""}, {"id": "justine-baisas", "name": "Justine Baisas", "area": "Ciudad de Strike, Molino 1 Bacoor, Cavite", "group": "Youth", "role": "Member", "flag": ""}, {"id": "justinne-rones", "name": "Justinne Rones", "area": "Molino 3", "group": "Youth", "role": "Volunteer", "flag": ""}, {"id": "kharl-creer", "name": "Kharl Creer", "area": "Mambog 3", "group": "Youth", "role": "Member", "flag": ""}, {"id": "killua-navidad", "name": "Killua Navidad", "area": "San Nicolas 1, Bacoor Cavite", "group": "Youth", "role": "Member", "flag": ""}, {"id": "kris-san-agustin", "name": "Kris San Agustin", "area": "Progressive 3, Bayanan, Bacoor, Cavite", "group": "Ladies", "role": "Member", "flag": ""}, {"id": "leona-barnett", "name": "Leona Barnett", "area": "Molino 1", "group": "Youth", "role": "Member", "flag": ""}, {"id": "lewin-misagal", "name": "Lewin Misagal", "area": "Molino 1", "group": "Yamo", "role": "Member", "flag": ""}, {"id": "macky-lataoan", "name": "Macky Lataoan", "area": "San Nicolas 3, Bacoor, Cavite", "group": "Youth", "role": "Member", "flag": ""}, {"id": "madi-peralta", "name": "Madi Peralta", "area": "Pampanga", "group": "Youth", "role": "Member", "flag": ""}, {"id": "megan-tuppal", "name": "Megan Tuppal", "area": "Molino 3", "group": "Youth", "role": "Member", "flag": ""}, {"id": "milca-arenio", "name": "Milca Arenio", "area": "Molino 1 Bacoor, Cavite", "group": "Youth", "role": "Member", "flag": ""}, {"id": "nico-reyes", "name": "Nico Reyes", "area": "Molave St. Meadowood Executive Village Panapaan 6", "group": "Yamo", "role": "Member", "flag": "Inactive"}, {"id": "prince-justinne-ramos", "name": "Prince Justinne Ramos", "area": "", "group": "", "role": "", "flag": ""}, {"id": "raine-culiat", "name": "Raine Culiat", "area": "Maliksi 1", "group": "Youth", "role": "Member", "flag": ""}, {"id": "raniel-fernandez", "name": "Raniel Fernandez", "area": "Progressive 6, Bayanan, Bacoor", "group": "Youth", "role": "Member", "flag": "Inactive"}, {"id": "rebecca-veluz", "name": "Rebecca Veluz", "area": "Progressive Village, Molino I, Bacoor, Cavite", "group": "Yamo", "role": "Member", "flag": ""}, {"id": "rhenzey-obina-intela", "name": "Rhenzey Obina Intela", "area": "Bayanan", "group": "Youth", "role": "Member", "flag": ""}, {"id": "rich-benedette-parducho", "name": "Rich Benedette Parducho", "area": "Molino 3, Bacoor Cavite", "group": "Youth", "role": "Member", "flag": ""}, {"id": "rich-parducho", "name": "Rich Parducho", "area": "Molino 3", "group": "Youth", "role": "Volunteer", "flag": ""}, {"id": "ronnalyn-leigh-villanueva", "name": "Ronnalyn Leigh Villanueva", "area": "Molino 2", "group": "Youth", "role": "Member", "flag": ""}, {"id": "sean-jacob-roque", "name": "Sean Jacob Roque", "area": "Molino 3", "group": "Youth", "role": "Volunteer", "flag": ""}, {"id": "serafina-dela-riva", "name": "Serafina dela Riva", "area": "Dulong Bayan Bacoor, Cavite", "group": "Youth", "role": "Member", "flag": ""}, {"id": "zara-florence-veluz", "name": "Zara Florence Veluz", "area": "Progressive 8, Molino 1, Bacoor, Cavite", "group": "Youth", "role": "Member", "flag": ""}, {"id": "zoe-veluz", "name": "Zoe Veluz", "area": "Progressive 8, Molino 1, Bacoor, Cavite", "group": "Youth", "role": "Member", "flag": ""}, {"id": "angelica-ilagan", "name": "Angelica Ilagan", "area": "Imus", "group": "Ladies", "role": "Pastor's Wife", "flag": ""}, {"id": "cheng-yap", "name": "Cheng Yap", "area": "San Nicolas 1", "group": "Ladies", "role": "Volunteer", "flag": ""}, {"id": "elpejane-rabanes", "name": "Elpejane Rabanes", "area": "Maliksi 1", "group": "Ladies", "role": "Volunteer", "flag": "Inactive"}, {"id": "jhyn-panganiban", "name": "Jhyn Panganiban", "area": "Bayanan", "group": "Ladies", "role": "Volunteer", "flag": ""}, {"id": "jocelyn-quiamson", "name": "Jocelyn Quiamson", "area": "Molino 1, Bacoor, Cavite", "group": "Ladies", "role": "Volunteer", "flag": ""}, {"id": "lhen-montemolin", "name": "Lhen Montemolin", "area": "Molino 3", "group": "Ladies", "role": "Volunteer", "flag": ""}, {"id": "lory-flores", "name": "Lory Flores", "area": "Bayanan", "group": "Ladies", "role": "Volunteer", "flag": ""}, {"id": "ma-claudia-cueto", "name": "Ma Claudia Cueto", "area": "Real 2, Bacoor", "group": "Ladies", "role": "Volunteer", "flag": ""}, {"id": "myra-concepcion", "name": "Myra Concepcion", "area": "Kawit", "group": "Ladies", "role": "Elder", "flag": ""}, {"id": "nena-peralta", "name": "Nena Peralta", "area": "Pasay", "group": "Ladies", "role": "Elder", "flag": ""}, {"id": "rina-ogale", "name": "Rina Ogale", "area": "Paliparan 3", "group": "Ladies", "role": "Elder", "flag": ""}, {"id": "rosalinda-alamon", "name": "Rosalinda Alamon", "area": "Molino 1, Bacoor Cavite", "group": "Ladies", "role": "Volunteer", "flag": ""}, {"id": "shiela-sales", "name": "Shiela Sales", "area": "B11 L8 Galicia st. Bellazona Aragon Subd.Bgy Molino 3 Bacoor Cavite", "group": "Ladies", "role": "Volunteer", "flag": ""}, {"id": "vina-mamerto", "name": "Vina Mamerto", "area": "Maliksi 1", "group": "Ladies", "role": "Volunteer", "flag": ""}, {"id": "dong-flores", "name": "Dong Flores", "area": "Bayanan, Bacoor Cavite", "group": "Men", "role": "Volunteer", "flag": ""}, {"id": "jayson-lavapie", "name": "Jayson Lavapie", "area": "Imus", "group": "Yamo", "role": "Volunteer", "flag": ""}, {"id": "jigs-cano", "name": "Jigs Cano", "area": "Panapaan 1", "group": "Men", "role": "Elder", "flag": ""}, {"id": "perry-ogale", "name": "Perry Ogale", "area": "Paliparan 3", "group": "Men", "role": "Elder", "flag": ""}, {"id": "angelo-cueto", "name": "Angelo Cueto", "area": "Real 2, Bacoor", "group": "Yamo", "role": "Volunteer", "flag": ""}, {"id": "caila-lauzon", "name": "Caila Lauzon", "area": "Bayanan, Bacoor, Cavite", "group": "Yamo", "role": "Volunteer", "flag": ""}, {"id": "christian-torres", "name": "Christian Torres", "area": "Bayanan, Bacoor, Cavite", "group": "Yamo", "role": "Volunteer", "flag": ""}, {"id": "delmar-villalobos", "name": "Delmar Villalobos", "area": "Bayanan, Bacoor, Cavite", "group": "Yamo", "role": "Volunteer", "flag": ""}, {"id": "dianne-nery", "name": "Dianne Nery", "area": "Buhay na Tubig Imus", "group": "Yamo", "role": "Volunteer", "flag": ""}, {"id": "eracel-marasigan", "name": "Eracel Marasigan", "area": "Bayanan, Bacoor, Cavite", "group": "Yamo", "role": "Volunteer", "flag": ""}, {"id": "gianne-louise-tolentino", "name": "Gianne Louise Tolentino", "area": "Bayanan, Bacoor, Cavite", "group": "Yamo", "role": "Volunteer", "flag": ""}, {"id": "jeremi-quiamson", "name": "Jeremi Quiamson", "area": "Molino 1, Bacoor, Cavite", "group": "Yamo", "role": "Volunteer", "flag": ""}, {"id": "jhomar-cabiles", "name": "Jhomar Cabiles", "area": "San Nicolas 1", "group": "Yamo", "role": "Leader", "flag": ""}, {"id": "jigs-nery", "name": "Jigs Nery", "area": "Imus", "group": "Yamo", "role": "Volunteer", "flag": ""}, {"id": "john-marlon-de-castro", "name": "John Marlon De Castro", "area": "Bayanan, Bacoor, Cavite", "group": "Yamo", "role": "Volunteer", "flag": ""}, {"id": "john-michael-rivera", "name": "John Michael Rivera", "area": "Kawit", "group": "Yamo", "role": "Leader", "flag": ""}, {"id": "jomar-bagamasbad", "name": "Jomar Bagamasbad", "area": "Dulong Bayan", "group": "Yamo", "role": "Volunteer", "flag": ""}, {"id": "katreen-cabiles", "name": "Katreen Cabiles", "area": "San Nicoclas 1", "group": "Yamo", "role": "Leader", "flag": ""}, {"id": "kevin-canaynay", "name": "Kevin Canaynay", "area": "BF Laspinas", "group": "Yamo", "role": "Volunteer", "flag": ""}, {"id": "krista-satana", "name": "Krista Satana", "area": "Kawit", "group": "Yamo", "role": "Volunteer", "flag": ""}, {"id": "mark-lavapie", "name": "Mark Lavapie", "area": "Buhay na Tubig, Imus", "group": "Yamo", "role": "Volunteer", "flag": ""}, {"id": "mayce-rivera", "name": "Mayce Rivera", "area": "Kawit", "group": "Yamo", "role": "Leader", "flag": ""}, {"id": "nikki-juntilla", "name": "Nikki Juntilla", "area": "San Nicoclas 1", "group": "Yamo", "role": "Volunteer", "flag": ""}, {"id": "rencel-de-castro", "name": "Rencel De Castro", "area": "Bayanan, Bacoor, Cavite", "group": "Yamo", "role": "Volunteer", "flag": ""}, {"id": "ritchelle-vera-nunez", "name": "Ritchelle Vera Nuñez", "area": "Molino 3, Bacoor Cavite", "group": "Yamo", "role": "Volunteer", "flag": ""}, {"id": "robert-flores", "name": "Robert Flores", "area": "Maliksi 1", "group": "Yamo", "role": "Volunteer", "flag": ""}, {"id": "shai-leuterio", "name": "Shai Leuterio", "area": "Dasmarinas", "group": "Yamo", "role": "Leader", "flag": ""}, {"id": "aizell-mariano", "name": "Aizell Mariano", "area": "Maliksi 1", "group": "Youth", "role": "Volunteer", "flag": ""}, {"id": "ameer-dela-pena", "name": "Ameer Dela Peña", "area": "Buhay na Tubig, Imus", "group": "Youth", "role": "Volunteer", "flag": ""}, {"id": "gwen-juntilla", "name": "Gwen Juntilla", "area": "San Nicoclas 1", "group": "Youth", "role": "Volunteer", "flag": ""}, {"id": "irah-isabelle-ogale", "name": "Irah Isabelle Ogale", "area": "Paliparan 3", "group": "Youth", "role": "Volunteer", "flag": ""}, {"id": "jaylourd-jaro", "name": "Jaylourd Jaro", "area": "Molino 1, Bacoor, Cavite", "group": "Youth", "role": "Volunteer", "flag": ""}, {"id": "jeselle-mae-ogale", "name": "Jeselle Mae Ogale", "area": "Paliparan 3", "group": "Youth", "role": "Volunteer", "flag": ""}, {"id": "jhovie-sarmiento", "name": "Jhovie Sarmiento", "area": "Maliksi 1", "group": "Youth", "role": "Volunteer", "flag": ""}, {"id": "john-cedric-seblario", "name": "John Cedric Seblario", "area": "Blk 3 Lot 5 Emerald St. Citihomes Subd. Molino 4 Bacoor Cavite", "group": "Youth", "role": "Volunteer", "flag": ""}, {"id": "kobe-anese", "name": "Kobe Anese", "area": "Molino 3", "group": "Youth", "role": "Volunteer", "flag": ""}, {"id": "lauryn-badi", "name": "Lauryn Badi", "area": "Block 20 Lot 7 Topaz St. Ridgecrest Summit Brgy. Pasong Buaya 2 Imus, Cavite", "group": "Youth", "role": "Volunteer", "flag": ""}, {"id": "primo-sales", "name": "Primo Sales", "area": "B11 L8 Galicia st. Bellazona Aragon Subd.Bgy Molino 3 Bacoor Cavite", "group": "Youth", "role": "Volunteer", "flag": ""}, {"id": "princess-jennille-manuel", "name": "Princess Jennille Manuel", "area": "Bayanan", "group": "Youth", "role": "Volunteer", "flag": ""}, {"id": "richa-thea-montemolin", "name": "Richa Thea Montemolin", "area": "Molino 3, Bacoor Cavite", "group": "Youth", "role": "Volunteer", "flag": ""}, {"id": "richo-ezekiel-parducho", "name": "Richo Ezekiel Parducho", "area": "Molino 3, Bacoor Cavite", "group": "Youth", "role": "Volunteer", "flag": ""}, {"id": "sabrina-limcolioc", "name": "Sabrina Limcolioc", "area": "Buhay na Tubig, Imus", "group": "Youth", "role": "Volunteer", "flag": ""}, {"id": "samantha-dupa", "name": "Samantha Dupa", "area": "San Nicolas 3", "group": "Youth", "role": "Volunteer", "flag": ""}, {"id": "thea-montemolin", "name": "Thea Montemolin", "area": "Molino 3, Bacoor Cavite", "group": "Youth", "role": "Volunteer", "flag": ""}, {"id": "yancy-caduada", "name": "Yancy Caduada", "area": "Paliparan 3", "group": "Youth", "role": "Volunteer", "flag": ""}, {"id": "alisha-fayre-arenio", "name": "Alisha Fayre Arenio", "area": "Molino 1 Bacoor, Cavite", "group": "Youth", "role": "Volunteer", "flag": ""}, {"id": "annabelle-dumagtoy", "name": "Annabelle Dumagtoy", "area": "Timbang, Mambog 3", "group": "Ladies", "role": "Member", "flag": ""}, {"id": "airene-jane-ablay", "name": "Airene Jane Ablay", "area": "Ligas 1, Bacoor, Cavite", "group": "Youth", "role": "Member", "flag": ""}, {"id": "ashaena-dancel", "name": "Ashaena Dancel", "area": "Mambog 4, Bacoor, Cavite", "group": "Youth", "role": "Member", "flag": "Inactive"}, {"id": "carlo-kevin-pecson", "name": "Carlo Kevin Pecson", "area": "Hoteliers Village, Bayanan Bacoor, Cavite", "group": "Men", "role": "Member", "flag": ""}, {"id": "cathyrine-inguillo", "name": "Cathyrine Inguillo", "area": "Villa Arencia Mambog 3, Bacoor", "group": "Yamo", "role": "Member", "flag": ""}, {"id": "christine-joy-bertolano", "name": "Christine Joy Bertolano", "area": "San Nicolas 1, Bacoor Cavite", "group": "Youth", "role": "Member", "flag": "Inactive"}, {"id": "calvin-kian-ursua", "name": "Calvin Kian Ursua", "area": "Niog 2", "group": "Youth", "role": "Member", "flag": ""}, {"id": "fiona-louisse-dioneda", "name": "Fiona Louisse Dioneda", "area": "Talaba 1, Bacoor", "group": "Youth", "role": "Member", "flag": "Inactive"}, {"id": "francis-chito-yu", "name": "Francis Chito Yu", "area": "Pasay City", "group": "Yamo", "role": "Member", "flag": ""}, {"id": "gale-abishai-arenio", "name": "Gale Abishai Arenio", "area": "Molino 1 Bacoor, Cavite", "group": "Youth", "role": "Member", "flag": ""}, {"id": "james-jared-tan-dela-cruz", "name": "James Jared Tan Dela Cruz", "area": "Molino 2", "group": "Youth", "role": "Member", "flag": "Inactive"}, {"id": "jan-mark-jaro", "name": "Jan Mark Jaro", "area": "Ciudad de Strike, Molino 1 Bacoor, Cavite", "group": "Yamo", "role": "Member", "flag": "Inactive"}, {"id": "jelyn-dela-cruz", "name": "Jelyn Dela Cruz", "area": "Molino 2", "group": "Ladies", "role": "Member", "flag": "Inactive"}, {"id": "jem-dela-cruz", "name": "Jem Dela Cruz", "area": "Molino 6", "group": "Ladies", "role": "Member", "flag": "Inactive"}, {"id": "jemalyn-tan-campos", "name": "Jemalyn Tan Campos", "area": "Molino 2", "group": "Yamo", "role": "Member", "flag": "Inactive"}, {"id": "jennel-marie-tan", "name": "Jennel Marie Tan", "area": "Molino 6", "group": "Yamo", "role": "Member", "flag": "Inactive"}, {"id": "jennelyn-abas", "name": "Jennelyn Abas", "area": "Molino 2, Bacoor, Cavite", "group": "Yamo", "role": "Member", "flag": ""}, {"id": "jenniel-campos", "name": "Jenniel Campos", "area": "Molino 2", "group": "Yamo", "role": "Member", "flag": "Inactive"}, {"id": "jerica-dioneda", "name": "Jerica Dioneda", "area": "Talaba 2", "group": "Ladies", "role": "Member", "flag": ""}, {"id": "jomar-melitante", "name": "Jomar Melitante", "area": "Progressive 3, Bayanan, Bacoor, Cavite", "group": "Yamo", "role": "Member", "flag": ""}, {"id": "joshua-cabaguing", "name": "Joshua Cabaguing", "area": "Molino 2", "group": "Yamo", "role": "Member", "flag": "Inactive"}, {"id": "julie-ann-abas", "name": "Julie Ann Abas", "area": "Molino 2, Bacoor, Cavite", "group": "Yamo", "role": "Member", "flag": ""}, {"id": "justin-lebuna", "name": "Justin Lebuna", "area": "Bayanan, Bacoor, Cavite", "group": "Youth", "role": "Member", "flag": "Inactive"}, {"id": "jesrylyn-carylle-quiamco", "name": "Jesrylyn Carylle Quiamco", "area": "Navotas City", "group": "Youth", "role": "Member", "flag": ""}, {"id": "karen-morales", "name": "Karen Morales", "area": "1225 Maliksi 3, Bacoor", "group": "Ladies", "role": "Member", "flag": ""}, {"id": "kaye-ablay", "name": "Kaye Ablay", "area": "Ligas 2, Bacoor, Cavite", "group": "Youth", "role": "Member", "flag": ""}, {"id": "kersteen-oppen", "name": "Kersteen Oppen", "area": "Ligas 1, Bacoor, Cavite", "group": "Youth", "role": "Member", "flag": ""}, {"id": "king-martin-alvarez", "name": "King Martin Alvarez", "area": "Taguig", "group": "Yamo", "role": "Member", "flag": ""}, {"id": "leonard-saquine", "name": "Leonard Saquine", "area": "Molino 2, Bacoor, Cavite", "group": "Yamo", "role": "Member", "flag": ""}, {"id": "loida-baglirit", "name": "Loida Baglirit", "area": "Bayanan, Bacoor, Cavite", "group": "Ladies", "role": "Member", "flag": "Inactive"}, {"id": "louis-klein-dordas", "name": "Louis Klein Dordas", "area": "Mambog 4, Bacoor Cavite", "group": "Yamo", "role": "Member", "flag": ""}, {"id": "louise-teneil-dordas", "name": "Louise Teneil Dordas", "area": "Mambog 4, Bacoor Cavite", "group": "Youth", "role": "Member", "flag": ""}, {"id": "lucia-quilicol", "name": "Lucia Quilicol", "area": "Greentown Villas 2, Molino 3", "group": "Ladies", "role": "Member", "flag": "Inactive"}, {"id": "maria-cano", "name": "Maria Cano", "area": "Timbang Compound, Mambog 3, Bacoor Cavite", "group": "Ladies", "role": "Member", "flag": ""}, {"id": "marita-ablay", "name": "Marita Ablay", "area": "Ligas 1, Bacoor, Cavite", "group": "Ladies", "role": "Member", "flag": ""}, {"id": "marivic-cano", "name": "Marivic Cano", "area": "Timbang Compound, Molino 3 Bacoor, Cavite", "group": "Ladies", "role": "Member", "flag": ""}, {"id": "mario-camacho", "name": "Mario Camacho", "area": "Soldiers Hills, Molino 4, Bacoor Cavite", "group": "Youth", "role": "Member", "flag": ""}, {"id": "nathan-van-blanco", "name": "Nathan Van Blanco", "area": "Mambog 2, Bacoor, Cavite", "group": "Youth", "role": "Member", "flag": ""}, {"id": "nenita-jane-reyes", "name": "Nenita Jane Reyes", "area": "Meadowood, Panapaan 8, Bacoor, Cavite", "group": "Ladies", "role": "Member", "flag": "Inactive"}, {"id": "patrick-lawrence-sanchez", "name": "Patrick Lawrence Sanchez", "area": "Ligas 1, Bacoor, Cavite", "group": "Youth", "role": "Member", "flag": ""}, {"id": "precious-leona-dioneda", "name": "Precious Leona Dioneda", "area": "Talaba 1, Bacoor", "group": "Youth", "role": "Member", "flag": ""}, {"id": "prince-rian-oyeman", "name": "Prince Rian Oyeman", "area": "Mambog 4, Bacoor, Cavite", "group": "Youth", "role": "Member", "flag": "Inactive"}, {"id": "ramchoy-escabal", "name": "Ramchoy Escabal", "area": "Bayanan, Bacoor, Cavite", "group": "Yamo", "role": "Member", "flag": "Inactive"}, {"id": "renato-reyes-sr", "name": "Renato Reyes Sr.", "area": "Meadowood, Panapaan 8, Bacoor, Cavite", "group": "Men", "role": "Member", "flag": "Inactive"}, {"id": "rexie-fullos", "name": "Rexie Fullos", "area": "Sun Valley, Parañaque City", "group": "Ladies", "role": "Member", "flag": ""}, {"id": "rhain-abas", "name": "Rhain Abas", "area": "Molino 2 Bacoor, Cavite", "group": "Yamo", "role": "Member", "flag": ""}, {"id": "rhaizel-ablay", "name": "Rhaizel Ablay", "area": "Ligas 1, Bacoor, Cavite", "group": "Youth", "role": "Member", "flag": ""}, {"id": "ronel-james-ablay", "name": "Ronel James Ablay", "area": "Ligas 1, Bacoor, Cavite", "group": "Youth", "role": "Member", "flag": ""}, {"id": "rosemarie-salazar", "name": "Rosemarie Salazar", "area": "Bayanan Calinga Compund", "group": "Yamo", "role": "Member", "flag": ""}, {"id": "roxette-yu", "name": "Roxette Yu", "area": "Pasay City", "group": "Yamo", "role": "Member", "flag": ""}, {"id": "russel-patricio", "name": "Russel Patricio", "area": "Molino 2", "group": "Youth", "role": "Member", "flag": ""}, {"id": "rency-reyes", "name": "Rency Reyes", "area": "Meadowood, Panapaan 8, Bacoor, Cavite", "group": "Youth", "role": "Member", "flag": ""}, {"id": "shaun-angelo-inguillo", "name": "Shaun Angelo Inguillo", "area": "Villa Arencia Mambog 3, Bacoor", "group": "Youth", "role": "Member", "flag": ""}, {"id": "shiela-salvadora-pecson", "name": "Shiela Salvadora-Pecson", "area": "Hoteliers Village, Bayanan Bacoor, Cavite", "group": "Ladies", "role": "Member", "flag": ""}, {"id": "shirley-ortega", "name": "Shirley Ortega", "area": "Timbang, Mambog 3", "group": "Ladies", "role": "Member", "flag": ""}, {"id": "teresita-espiritu", "name": "Teresita Espiritu", "area": "Maliksi 2", "group": "Ladies", "role": "Member", "flag": ""}, {"id": "trisha-adi", "name": "Trisha Adi", "area": "Bayanan, Bacoor, Cavite", "group": "Youth", "role": "Member", "flag": "Inactive"}, {"id": "wilma-reyes", "name": "Wilma Reyes", "area": "Mambog 4, Bacoor, Cavite", "group": "Ladies", "role": "Member", "flag": ""}, {"id": "yuel-bayos", "name": "Yuel Bayos", "area": "Panapaan, Bacoor, Cavite", "group": "Yamo", "role": "Member", "flag": ""}, {"id": "jaja-bayos", "name": "Jaja Bayos", "area": "Panapaan, Bacoor, Cavite", "group": "Yamo", "role": "Member", "flag": ""}, {"id": "nelson-lataoan", "name": "Nelson Lataoan", "area": "San Nicolas 3, Bacoor, Cavite", "group": "Men", "role": "Member", "flag": ""}, {"id": "tin-badi", "name": "Tin Badi", "area": "Block 20 Lot 7 Topaz St. Ridgecrest Summit Brgy. Pasong Buaya 2 Imus, Cavite", "group": "Ladies", "role": "Elder", "flag": ""}, {"id": "delmar-tangonan", "name": "Delmar Tangonan", "area": "San Nicolas 1, Bacoor", "group": "Yamo", "role": "Pastor's Wife", "flag": ""}, {"id": "joraine-canaynay", "name": "Joraine Canaynay", "area": "BF Laspinas", "group": "Yamo", "role": "Volunteer", "flag": ""}, {"id": "vince-ian-casacbuena", "name": "Vince Ian Casacbuena", "area": "Molino 3", "group": "Youth", "role": "Member", "flag": ""}, {"id": "josephine-cruz", "name": "Josephine Cruz", "area": "Pasay City", "group": "Ladies", "role": "Elder", "flag": ""}, {"id": "lea-grama", "name": "Lea Grama", "area": "Imus", "group": "Ladies", "role": "Lead Pastor's Wife", "flag": ""}, {"id": "toto-grama", "name": "Toto Grama", "area": "Imus", "group": "Men", "role": "Lead Pastor", "flag": ""}, {"id": "eder-javier", "name": "Eder Javier", "area": "Maliks 1", "group": "Ladies", "role": "Volunteer", "flag": ""}, {"id": "jhee-juntilla", "name": "Jhee Juntilla", "area": "San Nicolas 1", "group": "Ladies", "role": "Elder", "flag": ""}, {"id": "ashley-hikaru-mamerto", "name": "Ashley Hikaru Mamerto", "area": "Maliks 1", "group": "Youth", "role": "Volunteer", "flag": ""}, {"id": "ruby-salac", "name": "Ruby Salac", "area": "Maliks 1", "group": "Ladies", "role": "Volunteer", "flag": ""}, {"id": "lolit-cruz", "name": "Lolit Cruz", "area": "Aniban 1", "group": "Ladies", "role": "Member", "flag": ""}, {"id": "babes-cruz", "name": "Babes Cruz", "area": "Aniban 1", "group": "Ladies", "role": "Member", "flag": ""}, {"id": "eleah-francine-salamat", "name": "Eleah Francine Salamat", "area": "Bayanan Bacoor", "group": "Youth", "role": "Volunteer", "flag": "Inactive"}, {"id": "nathan-casil", "name": "Nathan Casil", "area": "Laspinas", "group": "Youth", "role": "Volunteer", "flag": "Inactive"}, {"id": "airam-cientes", "name": "Airam Cientes", "area": "Laspinas", "group": "Youth", "role": "Volunteer", "flag": "Inactive"}, {"id": "brixdon-consumo", "name": "Brixdon Consumo", "area": "Ciudad de Strike, Molino 1 Bacoor, Cavite", "group": "Yamo", "role": "Member", "flag": ""}, {"id": "joemer-consumo", "name": "Joemer Consumo", "area": "Ciudad de Strike, Molino 1 Bacoor, Cavite", "group": "Yamo", "role": "Member", "flag": ""}, {"id": "kris-ann-joy-nicolas", "name": "Kris Ann Joy Nicolas", "area": "Mambog 3, Timbang, Bacoor, Cavite", "group": "", "role": "Member", "flag": ""}, {"id": "tess-paredes-tagotong", "name": "Tess Paredes Tagotong", "area": "Bayanan, Bacoor, Cavite", "group": "Ladies", "role": "Member", "flag": ""}];
+const SEED = {"extras": [{"id": "x-leonidres-manzo-yhuna", "name": "Leonidres Manzo (Yhuna)", "area": "", "group": "", "role": "", "flag": "", "added": true}, {"id": "x-tin-benting", "name": "Tin Benting", "area": "", "group": "", "role": "", "flag": "", "added": true}, {"id": "x-barchie-ferrer", "name": "Barchie Ferrer", "area": "", "group": "", "role": "", "flag": "", "added": true}, {"id": "x-karen-and-dan", "name": "Karen and Dan", "area": "", "group": "", "role": "", "flag": "", "added": true}, {"id": "x-ablay-fam", "name": "Ablay Fam", "area": "", "group": "", "role": "", "flag": "", "added": true}], "contacts": [{"memberId": "x-leonidres-manzo-yhuna", "name": "Leonidres Manzo (Yhuna)", "lastAttended": null, "entries": [{"id": "seed-2", "date": "2026-09-03", "method": "Message", "replied": false, "reply": "", "prayer": "", "next": null}]}, {"memberId": "jon-jon-san-agustin", "name": "Jon Jon San Agustin", "lastAttended": "2026-09-06", "entries": [{"id": "seed-3", "date": "2026-09-03", "method": "Message", "replied": true, "reply": "hi pastor,\nokay lang naman po kami medyo nabusy lang kaya di naka pag church,but this sunday mag attend kami po.Ty!", "prayer": "", "next": null}]}, {"memberId": "april-joy-adi", "name": "April Joy Adi", "lastAttended": null, "entries": [{"id": "seed-4", "date": "2026-09-03", "method": "Message", "replied": false, "reply": "", "prayer": "", "next": null}]}, {"memberId": "yuel-bayos", "name": "Yuel Bayos", "lastAttended": null, "entries": [{"id": "seed-5", "date": "2026-09-03", "method": "Message", "replied": false, "reply": "", "prayer": "", "next": null}]}, {"memberId": "kean-rian-benting", "name": "Kean Benting", "lastAttended": "2026-09-06", "entries": [{"id": "seed-6", "date": "2026-09-03", "method": "Message", "replied": false, "reply": "", "prayer": "", "next": null}]}, {"memberId": "x-tin-benting", "name": "Tin Benting", "lastAttended": "2026-09-06", "entries": [{"id": "seed-7", "date": "2026-09-03", "method": "Message", "replied": true, "reply": "Attended wake service last Sunday Aug 30, 2026. Will attend Church next Sunday", "prayer": "", "next": null}]}, {"memberId": "nico-reyes", "name": "Reyes Nico", "lastAttended": null, "entries": [{"id": "seed-8", "date": "2026-09-03", "method": "Message", "replied": false, "reply": "", "prayer": "", "next": null}]}, {"memberId": "tess-paredes-tagotong", "name": "Tess Paredes Tagotong", "lastAttended": null, "entries": [{"id": "seed-9", "date": "2026-09-03", "method": "Message", "replied": false, "reply": "", "prayer": "", "next": null}]}, {"memberId": "francis-chito-yu", "name": "Francis Yu", "lastAttended": null, "entries": [{"id": "seed-10", "date": "2026-09-03", "method": "Message", "replied": false, "reply": "", "prayer": "", "next": null}]}, {"memberId": "king-martin-alvarez", "name": "Kingmartin Alvarez", "lastAttended": null, "entries": [{"id": "seed-11", "date": "2026-09-03", "method": "Message", "replied": true, "reply": "Hindi po, Ptr. Bryan. Nasa TESDA po kasi ako nu'ng sunday.", "prayer": "Successful graduation day, and favorable in finding a new Job", "next": null}]}, {"memberId": "wilma-reyes", "name": "Wilma Reyes", "lastAttended": "2026-09-06", "entries": [{"id": "seed-12", "date": "2026-09-03", "method": "Message", "replied": false, "reply": "", "prayer": "", "next": null}]}, {"memberId": "ricardo-acosta", "name": "Ric Acosta", "lastAttended": "2026-09-12", "entries": [{"id": "seed-13", "date": "2026-09-03", "method": "Message", "replied": true, "reply": "Hi Pastor Bryan. Good Afternoon! Okay naman po ako currently , dito ako sa San Pablo Laguna katapos lang ng birthday ng pamangkin ko and unwind narin.", "prayer": "Please pray for me Pastor Bryan and ipanalangin niyo rin po ang aking pamilya, pati na rin ang aking mga plano at  trabaho , para sa mga susunod na araw na patuloy kaming gabayan ng panginoon. Salamat", "next": null}]}, {"memberId": "rexie-fullos", "name": "Rexie Fulllos", "lastAttended": null, "entries": [{"id": "seed-14", "date": "2026-09-03", "method": "Message", "replied": true, "reply": "Ok lng nman kmi.", "prayer": "Para  sa aking family sana ligtas  araw araw..at good health..\nSalamat sayo  God bless us.", "next": null}]}, {"memberId": "ed-custer-balmeo", "name": "Ed Balmeo", "lastAttended": "2026-09-06", "entries": [{"id": "seed-15", "date": "2026-09-04", "method": "Message", "replied": true, "reply": "God's grace, ok nman po kami,..", "prayer": "Good morning po,, pray po n gumanda n panahon, good health para po sa parents namin ni gee.. Salamat pastor..", "next": null}]}, {"memberId": "arnel-saragosa", "name": "Arnel Saragosa", "lastAttended": null, "entries": [{"id": "seed-16", "date": "2026-09-04", "method": "Message", "replied": false, "reply": "", "prayer": "", "next": null}]}, {"memberId": "jonalyn-baran", "name": "Jhona Baran", "lastAttended": "2026-09-12", "entries": [{"id": "seed-17", "date": "2026-09-09", "method": "Visit", "replied": true, "reply": "BS By Cruz Fam", "prayer": "", "next": null}]}, {"memberId": "x-barchie-ferrer", "name": "Barchie Ferrer", "lastAttended": null, "entries": [{"id": "seed-18", "date": "2026-09-10", "method": "Message", "replied": false, "reply": "", "prayer": "", "next": null}]}, {"memberId": "x-karen-and-dan", "name": "Karen and Dan", "lastAttended": null, "entries": [{"id": "seed-19", "date": "2026-09-10", "method": "Message", "replied": true, "reply": "Good morning po! Okay na po si kenji. Waiting nalang po kame madischarge. 🙂 salamat po sa mga prayers! 🙏", "prayer": "Complete Healing for Kenjie", "next": null}]}, {"memberId": "cathyrine-inguillo", "name": "Cathy Inguilo", "lastAttended": null, "entries": [{"id": "seed-20", "date": "2026-09-10", "method": "Message", "replied": true, "reply": "Good morning po. Pasensya na po 2 sundays na kami di nkakaattend..", "prayer": "Prayer for healing po. Ilang days na po kasi ako may sakit. And kay Shaun din mag 2 weeks ng may ubo.. healing po samin dalwa.", "next": null}]}, {"memberId": "joy-lataoan", "name": "Joy Lataoan", "lastAttended": null, "entries": [{"id": "seed-21", "date": "2026-09-10", "method": "Message", "replied": true, "reply": "Hi Pastor,thanks sa pagkumusta,ok lng nman po,pilit nilalabanan ang depression at anxiety.Di maiwasang matrigger dhil sa pinagdadaanang challenges.", "prayer": "Requesting prayer sa patuloy na gabay ni Lord pastor.Thank you", "next": null}]}, {"memberId": "x-ablay-fam", "name": "Ablay Fam", "lastAttended": null, "entries": [{"id": "seed-22", "date": "2026-09-10", "method": "Message", "replied": false, "reply": "", "prayer": "", "next": null}]}]};
+
+/* ---------- state ---------- */
+let db = null, downloads = null, localOnly = false, ready = false;
+const state = {
+  contacts: {},          // id -> {memberId,name,lastAttended,entries:[]}
+  extras: [],            // people added by hand
+  view: 'followups',
+  focus: null,           // bucket filter on home
+  query: '',
+  chip: 'all',
+  peopleLimit: 60
+};
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const todayISO = () => { const d=new Date(); return new Date(d.getTime()-d.getTimezoneOffset()*6e4).toISOString().slice(0,10); };
+const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function fmt(iso){ if(!iso) return ''; const [y,m,d]=iso.split('-'); return MON[+m-1]+' '+(+d); }
+function fmtFull(iso){ if(!iso) return ''; const [y,m,d]=iso.split('-'); return MON[+m-1]+' '+(+d)+', '+y; }
+function daysBetween(a,b){ return Math.round((Date.parse(b)-Date.parse(a))/864e5); }
+function ago(iso){ const n=daysBetween(iso,todayISO()); if(n<=0) return 'today'; if(n===1) return 'yesterday'; if(n<14) return n+' days ago'; return Math.floor(n/7)+' weeks ago'; }
+function weekStart(iso){ const d=new Date(iso+'T00:00:00'); const off=(d.getDay()+6)%7; d.setDate(d.getDate()-off);
+  return new Date(d.getTime()-d.getTimezoneOffset()*6e4).toISOString().slice(0,10); }
+
+function people(){ return ROSTER.concat(state.extras); }
+let PMAP = {};
+function reindex(){ PMAP = {}; for(const p of people()) PMAP[p.id]=p; }
+reindex();
+
+function rec(id){ return state.contacts[id] || null; }
+function entriesOf(id){ const r=rec(id); return r && r.entries ? r.entries.slice().sort((a,b)=>a.date<b.date?-1:1) : []; }
+function lastEntry(id){ const e=entriesOf(id); return e.length? e[e.length-1] : null; }
+function nextDue(id){ const e=entriesOf(id).map(x=>x.next).filter(Boolean).sort(); return e.length? e[e.length-1]:null; }
+
+/* the five states of a conversation */
+function bucket(id){
+  const r=rec(id), last=lastEntry(id);
+  if(!last) return 'none';
+  const att = r && r.lastAttended;
+  if(att && att >= last.date) return 'back';
+  return last.replied ? 'replied' : 'noreply';
+}
+function isDue(id){
+  const n=nextDue(id); if(!n) return false;
+  if(n > todayISO()) return false;
+  return bucket(id) !== 'back' || (rec(id).lastAttended < n);
+}
+function intermittent(id){
+  const e=entriesOf(id), r=rec(id);
+  return e.length>=2 && r && r.lastAttended;
+}
+function groupsOf(b){
+  return people().filter(p=>bucket(p.id)===b).sort((a,b2)=>{
+    const x=lastEntry(a.id), y=lastEntry(b2.id);
+    return (x&&y) ? (x.date<y.date?1:-1) : 0;
+  });
+}
+
+/* ---------- storage ---------- */
+function lsKey(id){ return 'lccb:contact:'+id; }
+async function persist(r){
+  state.contacts[r.memberId]=r;
+  if(db && !localOnly){
+    try { await db.doc('contacts/'+r.memberId).set(r); return; }
+    catch(e){ console.warn('db write failed', e); }
+  }
+  try { localStorage.setItem(lsKey(r.memberId), JSON.stringify(r)); } catch(e){}
+}
+async function persistExtras(){
+  if(db && !localOnly){
+    try { await db.doc('roster/extras').set({people:state.extras}); return; } catch(e){ console.warn(e); }
+  }
+  try { localStorage.setItem('lccb:extras', JSON.stringify(state.extras)); } catch(e){}
+}
+function loadLocal(){
+  try{
+    const ex=localStorage.getItem('lccb:extras');
+    if(ex) state.extras=JSON.parse(ex)||[];
+    for(let i=0;i<localStorage.length;i++){
+      const k=localStorage.key(i);
+      if(k && k.startsWith('lccb:contact:')){
+        const r=JSON.parse(localStorage.getItem(k)); if(r&&r.memberId) state.contacts[r.memberId]=r;
+      }
+    }
+  }catch(e){}
+  reindex();
+}
+
+async function boot(){
+  loadLocal();
+  render();
+  try { db = await claude.use('db'); } catch(e){ db=null; }
+  try { downloads = await claude.use('downloads'); } catch(e){ downloads=null; }
+  if(!db){
+    localOnly = true;
+    const b=$('#banner'); b.hidden=false;
+    b.textContent='Saved on this device only — shared saving is unavailable right now.';
+    seedLocalIfEmpty();
+    ready=true; render(); return;
+  }
+  try{
+    const flag = await db.doc('meta/import').get();
+    if(!flag.exists) await importSeed();
+  }catch(e){ console.warn('seed check', e); }
+
+  db.collection('contacts').onSnapshot(snap=>{
+    const next={};
+    snap.docs.forEach(d=>{ const v=d.data(); if(v && v.memberId) next[v.memberId]=v; });
+    state.contacts=next; ready=true; render();
+  }, err=>{ console.warn('contacts sub', err); });
+
+  db.doc('roster/extras').onSnapshot(d=>{
+    const v=d.exists? d.data():null;
+    state.extras = (v && Array.isArray(v.people)) ? v.people : [];
+    reindex(); render();
+  }, err=>{ console.warn('extras sub', err); });
+}
+
+function seedLocalIfEmpty(){
+  if(Object.keys(state.contacts).length) return;
+  state.extras = SEED.extras.slice();
+  SEED.contacts.forEach(c=>{ state.contacts[c.memberId]=c; });
+  reindex();
+  try{
+    localStorage.setItem('lccb:extras', JSON.stringify(state.extras));
+    SEED.contacts.forEach(c=>localStorage.setItem(lsKey(c.memberId), JSON.stringify(c)));
+  }catch(e){}
+}
+async function importSeed(){
+  try{
+    await db.doc('roster/extras').set({people:SEED.extras});
+    for(const c of SEED.contacts){ await db.doc('contacts/'+c.memberId).set(c); }
+    await db.doc('meta/import').set({done:true, at:todayISO()});
+  }catch(e){ console.warn('import failed', e); }
+}
+
+/* ---------- render ---------- */
+function render(){
+  const m=$('#main');
+  document.querySelectorAll('.tab').forEach(t=>t.setAttribute('aria-selected', String(t.dataset.view===state.view)));
+  const due=people().filter(p=>isDue(p.id)).length;
+  const noreply=groupsOf('noreply').length, replied=groupsOf('replied').length;
+  $('#nFollow').textContent = due+noreply+replied;
+  const ws=weekStart(todayISO());
+  const weekEntries=[];
+  for(const p of people()) for(const e of entriesOf(p.id)) if(e.date>=ws) weekEntries.push({p,e});
+  $('#nWeek').textContent = weekEntries.length;
+  $('#weekLabel').textContent = 'week of '+fmt(ws);
+
+  if(state.view==='followups') m.innerHTML = viewFollow(due,noreply,replied);
+  else if(state.view==='people') m.innerHTML = viewPeople();
+  else m.innerHTML = viewWeek(weekEntries, ws);
+}
+
+function card(p, note){
+  const b=bucket(p.id), last=lastEntry(p.id), r=rec(p.id);
+  const pills = (isDue(p.id)?'<span class="pill p-due">Due '+fmt(nextDue(p.id))+'</span>':'')
+    + (intermittent(p.id)?'<span class="pill p-int">On and off</span>':'')
+    + (p.flag==='Inactive'?'<span class="pill p-in">Marked inactive</span>':'');
+  const sub=[p.group,p.role,p.area].filter(Boolean).join(' · ');
+  const quote = last && last.replied && last.reply ? '<p class="quote">'+esc(last.reply)+'</p>' : '';
+  return '<article class="card"><div class="top"><div>'
+    + '<button class="nm" data-person="'+p.id+'">'+esc(p.name)+'</button>'+pills
+    + '<div class="meta">'+esc(sub||'No group listed')+'</div></div>'
+    + '<div class="when">'+esc(note|| (last? ago(last.date):'never contacted'))+'</div></div>'
+    + quote
+    + '<div class="acts">'
+    + '<button class="btn pri" data-log="'+p.id+'">Log a follow-up</button>'
+    + (b!=='back' && last ? '<button class="btn ok" data-came="'+p.id+'">Came to church</button>' : '')
+    + '</div></article>';
+}
+
+function section(title, hint, cls, list, emptyMsg){
+  let h='<section><div class="sec-h"><h2>'+title+'</h2><p>'+hint+'</p></div><div class="rule '+cls+'"></div>';
+  h += list.length ? list.join('') : '<div class="empty">'+emptyMsg+'</div>';
+  return h+'</section>';
+}
+
+function viewFollow(due,noreply,replied){
+  const dueList=people().filter(p=>isDue(p.id));
+  const back=groupsOf('back').filter(p=>daysBetween(rec(p.id).lastAttended, todayISO())<=21);
+  const f=state.focus;
+  const strip='<div class="strip">'
+    + stat('due',dueList.length,'Due now')
+    + stat('noreply',noreply,'No reply')
+    + stat('replied',replied,'Replied, not back')
+    + stat('back',back.length,'Came back')
+    + '</div>';
+  let out=strip;
+  if(!f||f==='due') out+=section('Due now','you planned to reach out by today','r-due',
+      dueList.map(p=>card(p,'due '+fmt(nextDue(p.id)))), 'Nothing scheduled for today. Set a next date when you log a follow-up.');
+  if(!f||f==='noreply') out+=section('Waiting on a reply','followed up, no answer yet','r-noreply',
+      groupsOf('noreply').map(p=>card(p)), 'Everyone you followed up has answered.');
+  if(!f||f==='replied') out+=section('Replied, not back yet','they answered you but have not come to church since','r-replied',
+      groupsOf('replied').map(p=>card(p)), 'No one is in this state right now.');
+  if(!f||f==='back') out+=section('Came back','attended after your follow-up, in the last 3 weeks','r-back',
+      back.map(p=>card(p,'came '+fmt(rec(p.id).lastAttended))), 'No returns logged in the last 3 weeks.');
+  return out;
+}
+function stat(key,n,label){
+  return '<button class="stat'+(state.focus===key?' on':'')+'" data-focus="'+key+'"><b>'+n+'</b><span>'+label+'</span></button>';
+}
+
+const CHIPS=[['all','Everyone'],['todo','Needs follow-up'],['never','Not contacted yet'],
+  ['Yamo','Yamo'],['Youth','Youth'],['Ladies','Ladies'],['Men','Men'],['Kids','Kids'],['inactive','Marked inactive']];
+function viewPeople(){
+  const q=state.query.trim().toLowerCase();
+  let list=people().filter(p=>{
+    if(q && !(p.name.toLowerCase().includes(q) || (p.area||'').toLowerCase().includes(q))) return false;
+    const c=state.chip;
+    if(c==='all') return true;
+    if(c==='todo') return ['noreply','replied'].includes(bucket(p.id)) || isDue(p.id);
+    if(c==='never') return bucket(p.id)==='none';
+    if(c==='inactive') return p.flag==='Inactive';
+    return p.group===c;
+  });
+  list.sort((a,b)=>a.name.localeCompare(b.name));
+  const total=list.length;
+  const shown=list.slice(0, state.peopleLimit);
+  let h='<div class="search"><input id="q" type="text" placeholder="Search a name or area" value="'+esc(state.query)+'" autocomplete="off"></div>'
+    + '<div class="chips">'+CHIPS.map(([k,l])=>'<button class="chip'+(state.chip===k?' on':'')+'" data-chip="'+k+'">'+l+'</button>').join('')+'</div>'
+    + '<p class="count">'+total+' '+(total===1?'person':'people')+'</p><div class="list">';
+  h += shown.map(p=>{
+    const b=bucket(p.id), last=lastEntry(p.id);
+    const sub=[p.group,p.area].filter(Boolean).join(' · ') || 'No group listed';
+    return '<button class="row" data-person="'+p.id+'"><span class="dot '+(isDue(p.id)?'d-due':'d-'+b)+'"></span>'
+      + '<span style="flex:1"><span style="font-weight:600">'+esc(p.name)+'</span>'
+      + '<span class="meta">'+esc(sub)+'</span></span>'
+      + '<span class="when">'+(last?ago(last.date):'—')+'</span></button>';
+  }).join('') || '<div class="empty" style="border:0">No one matches that. Try another name or area.</div>';
+  h += '</div>';
+  if(total>shown.length) h+='<div class="acts"><button class="btn" id="more">Show more ('+(total-shown.length)+' left)</button></div>';
+  h += '<div class="acts"><button class="btn" id="addPerson">Add someone not on the list</button>'
+     + '<button class="btn" id="exportCsv">Export all follow-ups</button></div>';
+  return h;
+}
+
+function viewWeek(weekEntries, ws){
+  if(!weekEntries.length) return '<div class="empty" style="margin-top:20px">Nothing logged since '+fmt(ws)
+    + '. Tap “Log a follow-up” after you message or visit someone.</div>';
+  weekEntries.sort((a,b)=>a.e.date<b.e.date?1:-1);
+  let h='', day='';
+  for(const {p,e} of weekEntries){
+    if(e.date!==day){ day=e.date; h+='<p class="day">'+fmtFull(day)+'</p>'; }
+    h+='<div class="entry"><div class="top" style="display:flex;justify-content:space-between;gap:10px">'
+      + '<button class="nm" data-person="'+p.id+'">'+esc(p.name)+'</button>'
+      + '<span class="when">'+esc(e.method)+(e.replied?' · replied':' · no reply')+'</span></div>'
+      + (e.reply?'<p class="quote">'+esc(e.reply)+'</p>':'')
+      + (e.prayer?'<p class="pray">Prayer: '+esc(e.prayer)+'</p>':'')
+      + '</div>';
+  }
+  return h+'<div class="acts"><button class="btn" id="exportCsv">Export all follow-ups</button></div>';
+}
+
+/* ---------- sheets ---------- */
+function openSheet(html){
+  const s=document.createElement('div'); s.className='scrim'; s.id='scrim';
+  s.innerHTML='<div class="sheet" role="dialog" aria-modal="true">'+html+'</div>';
+  document.body.appendChild(s);
+  s.addEventListener('click', e=>{ if(e.target===s) closeSheet(); });
+  const f=s.querySelector('input,textarea,button'); if(f) f.focus();
+}
+function closeSheet(){ const s=$('#scrim'); if(s) s.remove(); }
+function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('on'); setTimeout(()=>t.classList.remove('on'),2200); }
+
+function personSheet(id){
+  const p=PMAP[id]; if(!p) return;
+  const r=rec(id), es=entriesOf(id).slice().reverse();
+  const sub=[p.group,p.role,p.area].filter(Boolean).join(' · ')||'No group listed';
+  let tl='';
+  if(r && r.lastAttended) tl+='<div class="it att"><div class="dt">'+fmtFull(r.lastAttended)+'</div><div class="tx">Came to church</div></div>';
+  tl+=es.map(e=>'<div class="it'+(e.replied?' yes':'')+'"><div class="dt">'+fmtFull(e.date)+' · '+esc(e.method)
+    +(e.replied?' · replied':' · no reply')+(e.next?' · next '+fmt(e.next):'')+'</div>'
+    + (e.reply?'<div class="tx">'+esc(e.reply)+'</div>':'')
+    + (e.prayer?'<div class="pray">Prayer: '+esc(e.prayer)+'</div>':'')+'</div>').join('');
+  if(!tl) tl='<div class="it"><div class="tx" style="color:var(--soft)">No follow-up logged yet.</div></div>';
+  openSheet('<button class="close" data-close>&times;</button><h2>'+esc(p.name)+'</h2>'
+    + '<p class="sub">'+esc(sub)+'</p>'
+    + '<div class="acts"><button class="btn pri" data-log="'+id+'">Log a follow-up</button>'
+    + '<button class="btn ok" data-came="'+id+'">Came to church</button></div>'
+    + '<div class="tl">'+tl+'</div>');
+}
+
+function logSheet(id){
+  const p=PMAP[id];
+  const opts=people().slice().sort((a,b)=>a.name.localeCompare(b.name))
+    .map(x=>'<option value="'+x.id+'"'+(x.id===id?' selected':'')+'>'+esc(x.name)+'</option>').join('');
+  openSheet('<button class="close" data-close>&times;</button><h2>Log a follow-up</h2>'
+    + '<p class="sub">'+(p?esc(p.name):'Pick who you reached out to')+'</p>'
+    + (p?'<input type="hidden" id="pid" value="'+id+'">':'<label for="pick">Person</label><select id="pick">'+opts+'</select>')
+    + '<label for="date">Date</label><input type="date" id="date" value="'+todayISO()+'">'
+    + '<label>How</label><div class="seg" id="method">'
+      + '<button data-m="Message" class="on">Message</button><button data-m="Call">Call</button><button data-m="Visit">Visit</button></div>'
+    + '<label>Did they reply?</label><div class="seg" id="replied">'
+      + '<button data-r="no" class="on">Not yet</button><button data-r="yes">Yes, they replied</button></div>'
+    + '<label for="reply">What they said</label><textarea id="reply" placeholder="Paste or summarise their reply"></textarea>'
+    + '<label for="prayer">Prayer request</label><textarea id="prayer" style="min-height:56px"></textarea>'
+    + '<label for="next">Follow up again on</label><input type="date" id="next">'
+    + '<p class="hint">Leave blank if you have no date in mind — they stay in the waiting list either way.</p>'
+    + '<div class="foot"><button class="btn" data-close>Cancel</button><button class="btn pri" id="saveLog">Save follow-up</button></div>');
+}
+
+function cameSheet(id){
+  const p=PMAP[id];
+  openSheet('<button class="close" data-close>&times;</button><h2>Came to church</h2>'
+    + '<p class="sub">'+esc(p.name)+'</p>'
+    + '<label for="adate">Which Sunday</label><input type="date" id="adate" value="'+lastSunday()+'">'
+    + '<div class="foot"><button class="btn" data-close>Cancel</button><button class="btn pri" id="saveCame" data-id="'+id+'">Save</button></div>');
+}
+function lastSunday(){ const d=new Date(); d.setDate(d.getDate()-d.getDay());
+  return new Date(d.getTime()-d.getTimezoneOffset()*6e4).toISOString().slice(0,10); }
+
+function addSheet(){
+  openSheet('<button class="close" data-close>&times;</button><h2>Add someone</h2>'
+    + '<p class="sub">For people not in the church list yet</p>'
+    + '<label for="an">Name</label><input type="text" id="an" autocomplete="off">'
+    + '<label for="ag">Group</label><select id="ag"><option value="">Not set</option><option>Yamo</option><option>Youth</option><option>Ladies</option><option>Men</option><option>Kids</option></select>'
+    + '<label for="aa">Area</label><input type="text" id="aa" autocomplete="off">'
+    + '<div class="foot"><button class="btn" data-close>Cancel</button><button class="btn pri" id="saveAdd">Add person</button></div>');
+}
+
+/* ---------- actions ---------- */
+async function saveLog(){
+  const id = $('#pid') ? $('#pid').value : $('#pick').value;
+  const p = PMAP[id]; if(!p) return;
+  const date = $('#date').value || todayISO();
+  const method = $('#method .on').dataset.m;
+  const replied = $('#replied .on').dataset.r === 'yes';
+  const reply = $('#reply').value.trim();
+  const prayer = $('#prayer').value.trim();
+  const next = $('#next').value || null;
+  const r = rec(id) || {memberId:id, name:p.name, lastAttended:null, entries:[]};
+  const copy = {memberId:id, name:p.name, lastAttended:r.lastAttended||null, entries:r.entries.slice()};
+  copy.entries.push({id:'e'+Date.now(), date, method, replied, reply, prayer, next});
+  closeSheet();
+  await persist(copy); render(); toast('Follow-up saved');
+}
+async function saveCame(id){
+  const p=PMAP[id]; if(!p) return;
+  const d=$('#adate').value || todayISO();
+  const r = rec(id) || {memberId:id, name:p.name, lastAttended:null, entries:[]};
+  const copy = {memberId:id, name:p.name, lastAttended:d, entries:r.entries.slice()};
+  closeSheet();
+  await persist(copy); render(); toast(p.name.split(' ')[0]+' marked as back');
+}
+async function saveAdd(){
+  const name=$('#an').value.trim(); if(!name){ toast('Type a name first'); return; }
+  const id='x-'+name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')+'-'+Math.random().toString(36).slice(2,5);
+  state.extras=state.extras.concat([{id,name,group:$('#ag').value,area:$('#aa').value.trim(),role:'',flag:'',added:true}]);
+  reindex(); closeSheet(); await persistExtras(); render(); toast(name+' added');
+}
+async function exportCsv(){
+  const rows=[['Name','Group','Area','Date','How','Replied','What they said','Prayer request','Next follow-up','Last attended']];
+  for(const p of people()){
+    const r=rec(p.id); if(!r) continue;
+    for(const e of entriesOf(p.id))
+      rows.push([p.name,p.group||'',p.area||'',e.date,e.method,e.replied?'Yes':'No',e.reply||'',e.prayer||'',e.next||'',r.lastAttended||'']);
+  }
+  const csv=rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\r\n');
+  if(!downloads){ toast('Export is not available here'); return; }
+  try{ await downloads.save({filename:'follow-ups-'+todayISO()+'.csv', data:csv}); }
+  catch(err){ if(err && err.code==='declined') return; toast('Could not export just now'); }
+}
+
+/* ---------- events ---------- */
+document.addEventListener('click', async e=>{
+  const t=e.target.closest('[data-view],[data-person],[data-log],[data-came],[data-focus],[data-chip],[data-close],[data-m],[data-r],#fab,#more,#addPerson,#exportCsv,#saveLog,#saveCame,#saveAdd');
+  if(!t) return;
+  if(t.dataset.view){ state.view=t.dataset.view; state.focus=null; render(); return; }
+  if(t.hasAttribute('data-close')){ closeSheet(); return; }
+  if(t.dataset.m){ t.parentElement.querySelectorAll('button').forEach(b=>b.classList.remove('on')); t.classList.add('on'); return; }
+  if(t.dataset.r){ t.parentElement.querySelectorAll('button').forEach(b=>b.classList.remove('on')); t.classList.add('on'); return; }
+  if(t.dataset.focus){ state.focus = state.focus===t.dataset.focus ? null : t.dataset.focus; render(); return; }
+  if(t.dataset.chip){ state.chip=t.dataset.chip; state.peopleLimit=60; render(); return; }
+  if(t.dataset.log){ closeSheet(); logSheet(t.dataset.log); return; }
+  if(t.dataset.came){ closeSheet(); cameSheet(t.dataset.came); return; }
+  if(t.dataset.person){ personSheet(t.dataset.person); return; }
+  if(t.id==='fab'){ logSheet(null); return; }
+  if(t.id==='more'){ state.peopleLimit+=120; render(); return; }
+  if(t.id==='addPerson'){ addSheet(); return; }
+  if(t.id==='exportCsv'){ exportCsv(); return; }
+  if(t.id==='saveLog'){ saveLog(); return; }
+  if(t.id==='saveCame'){ saveCame(t.dataset.id); return; }
+  if(t.id==='saveAdd'){ saveAdd(); return; }
+});
+document.addEventListener('input', e=>{
+  if(e.target.id==='q'){
+    state.query=e.target.value; state.peopleLimit=60;
+    const pos=e.target.selectionStart; render();
+    const q=$('#q'); if(q){ q.focus(); q.setSelectionRange(pos,pos); }
+  }
+});
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeSheet(); });
+
+boot();
+</script>
+</body>
+</html>
