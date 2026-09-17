@@ -364,22 +364,6 @@
   .fu-face-yes{color:var(--sage);font-weight:700;} .fu-face-no{color:var(--ink-light);}
   .fu-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px;}
   .fu-head button{padding:9px 16px;font-size:13.5px;}
-  .fu-report{border:1px solid var(--line);background:#fffdf8;padding:14px;margin:0 0 24px;}
-  .fu-report-head{display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:12px;}
-  .fu-report-periods{display:flex;gap:6px;flex-wrap:wrap;}
-  .fu-report-periods button{padding:7px 11px;font-size:12.5px;}
-  .fu-report-summary{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:10px 0 14px;}
-  .fu-report-stat{border:1px solid var(--line);padding:9px 10px;background:var(--parchment);}
-  .fu-report-stat b{display:block;font-family:'Lora',serif;font-size:1.3rem;color:var(--ink);}
-  .fu-report-stat span{font-size:11px;color:var(--ink-light);}
-  .fu-report-table{border:1px solid var(--line);overflow:auto;}
-  .fu-report-table table{min-width:760px;margin:0;}
-  .fu-pagination{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px;font-size:12.5px;color:var(--ink-light);}
-  .fu-pagination button{padding:6px 12px;font-size:12.5px;}
-  .fu-entry-actions{float:right;margin-left:10px;}
-  .fu-delete-entry{background:none;border:none;color:var(--rust);cursor:pointer;font-size:11.5px;font-weight:600;padding:2px 0;}
-  .fu-delete-entry:hover{text-decoration:underline;}
-  @media (max-width:760px){.fu-report-summary{grid-template-columns:repeat(2,1fr);}}
   .fu-pick-list{max-height:46vh;overflow:auto;border:1px solid var(--line);margin-top:10px;}
   .fu-pick{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;text-align:left;
     background:none;border:none;border-bottom:1px solid var(--line);padding:10px 12px;cursor:pointer;font-family:'Inter',sans-serif;}
@@ -525,37 +509,6 @@
       <button class="primary" id="fuNewBtn" type="button">+ New follow-up</button>
     </div>
     <div class="fu-strip" id="fuStrip"></div>
-    <div class="fu-report">
-      <div class="fu-report-head">
-        <div>
-          <h3 style="font-family:'Lora',serif;color:var(--ink);font-size:16px;margin:0 0 3px;">Follow-up report</h3>
-          <div id="fuReportLabel" style="font-size:12.5px;color:var(--ink-light);"></div>
-        </div>
-        <div class="fu-report-periods">
-          <button type="button" class="ghost" id="fuReportWeekBtn">Weekly</button>
-          <button type="button" class="ghost" id="fuReportMonthBtn">Monthly</button>
-          <button type="button" class="ghost" id="fuReportYearBtn">Yearly</button>
-        </div>
-        <div class="field" style="margin:0;">
-          <label for="fuReportDate">Report date</label>
-          <input type="date" id="fuReportDate">
-        </div>
-      </div>
-      <div class="fu-report-summary" id="fuReportSummary"></div>
-      <div class="fu-report-table">
-        <table>
-          <thead><tr><th>Date</th><th>Name</th><th>Group</th><th>How</th><th>Reply</th><th>Prayer request</th><th>Next follow-up</th></tr></thead>
-          <tbody id="fuReportTbody"></tbody>
-        </table>
-      </div>
-      <div class="fu-pagination" id="fuReportPagination" style="display:none;">
-        <span id="fuReportPageInfo"></span>
-        <div style="display:flex;gap:8px;">
-          <button type="button" class="ghost" id="fuReportPrevBtn">&laquo; Back</button>
-          <button type="button" class="ghost" id="fuReportNextBtn">Next &raquo;</button>
-        </div>
-      </div>
-    </div>
     <div id="fuBody"></div>
   </section>
 
@@ -868,10 +821,6 @@ const state = {
   fuQuery: '',
   fuChip: 'all',
   fuPeopleLimit: 60,
-  fuPageSize: 25,
-  fuPages: { due:1, noreply:1, replied:1, back:1 },
-  fuReportPeriod: 'week',
-  fuReportPage: 1,
   memberSort: { key: 'name', dir: 'asc' },
   memberPage: 1,
 };
@@ -2373,7 +2322,6 @@ async function exportFullBackup(){
       backupVersion: 1,
       exportedAt: new Date().toISOString(),
       members: state.members,
-      followupContacts: state.contacts,
       attendance,
     };
     const json = JSON.stringify(backup);
@@ -2406,8 +2354,6 @@ async function importFullBackup(file){
       regular: m.regular || 'Yes'
     }));
     if(!(await saveMembers())) throw new Error('Could not save member data.');
-    state.contacts = (backup.followupContacts && typeof backup.followupContacts === 'object') ? backup.followupContacts : {};
-    await saveFollowup();
 
     // Clear existing attendance stored in the normal localStorage fallback.
     const prefix = 'church-attendance:attendance:';
@@ -2590,51 +2536,36 @@ function fuStat(key,n,label){
 const FU_CHIPS=[['all','Everyone'],['todo','Needs follow-up'],['never','Not contacted yet'],
   ['Yamo','Yamo'],['Youth','Youth'],['Ladies','Ladies'],['Men','Men'],['Kids','Kids'],['unenrolled','No face on file']];
 
-function fuPaginate(key, list){
-  const size = state.fuPageSize || 25;
-  const totalPages = Math.max(1, Math.ceil(list.length / size));
-  let page = Number(state.fuPages[key] || 1);
-  if(page > totalPages) page = totalPages;
-  if(page < 1) page = 1;
-  state.fuPages[key] = page;
-  const start = (page-1)*size;
-  return {items:list.slice(start,start+size),page,totalPages,total:list.length,start,end:Math.min(start+size,list.length)};
-}
-function fuPaginationHtml(key,p){
-  if(p.total <= state.fuPageSize) return '';
-  return '<div class="fu-pagination"><span>Showing '+(p.start+1)+'–'+p.end+' of '+p.total+'</span><div style="display:flex;gap:8px;">'
-    +'<button type="button" class="ghost" data-fu-prev="'+key+'" '+(p.page<=1?'disabled':'')+'>&laquo; Back</button>'
-    +'<button type="button" class="ghost" data-fu-next="'+key+'" '+(p.page>=p.totalPages?'disabled':'')+'>Next &raquo;</button></div></div>';
-}
-function fuSectionPaged(title,hint,cls,key,list,emptyMsg){
-  const p=fuPaginate(key,list);
-  let h='<div class="fu-sec"><div class="fu-sec-h"><h3>'+title+'</h3><p>'+hint+'</p></div><div class="fu-rule '+cls+'"></div>';
-  h += p.total ? p.items.map(m=>fuCard(m,key==='due'?'due '+fuFmt(fuNextDue(m.id)):key==='back'?'came '+fuFmt(fuRec(m.id).lastAttended):'')).join('') : '<div class="fu-empty">'+emptyMsg+'</div>';
-  h += fuPaginationHtml(key,p);
-  return h+'</div>';
-}
 function renderFollowup(){
   const due=fuActiveMembers().filter(m=>fuIsDue(m.id));
   const noreply=fuGroupOf('noreply'), replied=fuGroupOf('replied');
-  const back=fuGroupOf('back').filter(m=>fuDaysBetween(fuRec(m.id).lastAttended,todayISO())<=21);
-  const badge=document.getElementById('followupTabCount');
-  const n=due.length+noreply.length+replied.length;
-  badge.textContent=n?String(n):'';
-  const strip=document.getElementById('fuStrip');
-  strip.innerHTML=fuStat('due',due.length,'Due now')+fuStat('noreply',noreply.length,'No reply')+fuStat('replied',replied.length,'Replied, not back')+fuStat('back',back.length,'Came back');
-  strip.querySelectorAll('[data-fu-focus]').forEach(b=>b.addEventListener('click',()=>{state.fuFocus=state.fuFocus===b.dataset.fuFocus?null:b.dataset.fuFocus;renderFollowup();}));
-  renderFollowupReport();
-  const body=document.getElementById('fuBody'), f=state.fuFocus; let out='';
-  if(!f||f==='due') out+=fuSectionPaged('Due now','you planned to reach out by today','fu-r-due','due',due,'Nothing scheduled for today.');
-  if(!f||f==='noreply') out+=fuSectionPaged('Waiting on a reply','followed up, no answer yet','fu-r-noreply','noreply',noreply,'Everyone you followed up has answered.');
-  if(!f||f==='replied') out+=fuSectionPaged('Replied, not back yet','answered you, has not attended since','fu-r-replied','replied',replied,'No one is in this state right now.');
-  if(!f||f==='back') out+=fuSectionPaged('Came back','attended after your follow-up, in the last 3 weeks','fu-r-back','back',back,'No returns logged in the last 3 weeks.');
-  body.innerHTML=out;
-  body.querySelectorAll('[data-fu-person]').forEach(b=>b.addEventListener('click',()=>fuOpenPerson(b.dataset.fuPerson)));
-  body.querySelectorAll('[data-fu-log]').forEach(b=>b.addEventListener('click',()=>fuOpenLog(b.dataset.fuLog)));
-  body.querySelectorAll('[data-fu-came]').forEach(b=>b.addEventListener('click',()=>fuOpenCame(b.dataset.fuCame)));
-  body.querySelectorAll('[data-fu-prev]').forEach(b=>b.addEventListener('click',()=>{const k=b.dataset.fuPrev;state.fuPages[k]=Math.max(1,(state.fuPages[k]||1)-1);renderFollowup();}));
-  body.querySelectorAll('[data-fu-next]').forEach(b=>b.addEventListener('click',()=>{const k=b.dataset.fuNext;state.fuPages[k]=(state.fuPages[k]||1)+1;renderFollowup();}));
+  const back=fuGroupOf('back').filter(m=>fuDaysBetween(fuRec(m.id).lastAttended, todayISO())<=21);
+  const badge = document.getElementById('followupTabCount');
+  const n = due.length+noreply.length+replied.length;
+  badge.textContent = n ? String(n) : '';
+
+  const strip = document.getElementById('fuStrip');
+  strip.innerHTML = fuStat('due',due.length,'Due now') + fuStat('noreply',noreply.length,'No reply')
+    + fuStat('replied',replied.length,'Replied, not back') + fuStat('back',back.length,'Came back');
+  strip.querySelectorAll('[data-fu-focus]').forEach(b=>{
+    b.addEventListener('click', ()=>{ state.fuFocus = state.fuFocus===b.dataset.fuFocus?null:b.dataset.fuFocus; renderFollowup(); });
+  });
+
+  const body = document.getElementById('fuBody');
+  const f = state.fuFocus;
+  let out='';
+  if(!f||f==='due') out+=fuSection('Due now','you planned to reach out by today','fu-r-due',
+    due.map(m=>fuCard(m,'due '+fuFmt(fuNextDue(m.id)))), 'Nothing scheduled for today.');
+  if(!f||f==='noreply') out+=fuSection('Waiting on a reply','followed up, no answer yet','fu-r-noreply',
+    noreply.map(m=>fuCard(m)), 'Everyone you followed up has answered.');
+  if(!f||f==='replied') out+=fuSection('Replied, not back yet','answered you, has not attended since','fu-r-replied',
+    replied.map(m=>fuCard(m)), 'No one is in this state right now.');
+  if(!f||f==='back') out+=fuSection('Came back','attended after your follow-up, in the last 3 weeks','fu-r-back',
+    back.map(m=>fuCard(m,'came '+fuFmt(fuRec(m.id).lastAttended))), 'No returns logged in the last 3 weeks.');
+  body.innerHTML = out;
+  body.querySelectorAll('[data-fu-person]').forEach(b=>b.addEventListener('click', ()=>fuOpenPerson(b.dataset.fuPerson)));
+  body.querySelectorAll('[data-fu-log]').forEach(b=>b.addEventListener('click', ()=>fuOpenLog(b.dataset.fuLog)));
+  body.querySelectorAll('[data-fu-came]').forEach(b=>b.addEventListener('click', ()=>fuOpenCame(b.dataset.fuCame)));
 }
 
 // ---------- Follow-up sheets (modal) ----------
@@ -2665,7 +2596,7 @@ function fuOpenPerson(id){
     // "replied / no reply" wording, which only makes sense for a contact.
     if(!fuIsContact(e)) return '<div class="it att"><div class="dt">'+fuFmtFull(e.date)
       +'</div><div class="tx">Scanned in at church</div></div>';
-    return '<div class="it'+(e.replied?' yes':'')+'"><div class="dt"><span class="fu-entry-actions"><button type="button" class="fu-delete-entry" data-fu-delete="'+escapeHtml(e.id||'')+'" data-fu-member="'+escapeHtml(id)+'">Delete</button></span>'+fuFmtFull(e.date)+' · '+escapeHtml(e.method)
+    return '<div class="it'+(e.replied?' yes':'')+'"><div class="dt">'+fuFmtFull(e.date)+' · '+escapeHtml(e.method)
       +(e.replied?' · replied':' · no reply')+(e.next?' · next '+fuFmt(e.next):'')+'</div>'
       + (e.reply?'<div class="tx">'+escapeHtml(e.reply)+'</div>':'')
       + (e.prayer?'<div class="fu-pray">Prayer: '+escapeHtml(e.prayer)+'</div>':'')+'</div>';
@@ -2681,46 +2612,6 @@ function fuOpenPerson(id){
   document.getElementById('fuCloseBtn').addEventListener('click', fuCloseSheet);
   document.getElementById('fuGoLog').addEventListener('click', ()=>{ fuCloseSheet(); fuOpenLog(id); });
   document.getElementById('fuGoCame').addEventListener('click', ()=>{ fuCloseSheet(); fuOpenCame(id); });
-  document.querySelectorAll('[data-fu-delete]').forEach(btn=>{
-    btn.addEventListener('click', async ()=>{
-      const entryId=btn.dataset.fuDelete, memberId=btn.dataset.fuMember, r=fuRec(memberId);
-      if(!r || !Array.isArray(r.entries)) return;
-      const entry=r.entries.find(e=>String(e.id)===String(entryId));
-      if(!entry || !fuIsContact(entry)) return;
-      const m2=memberById(memberId);
-      if(!confirm('Delete this follow-up record for "'+(m2?.name||'this member')+'"?\n\nThis cannot be undone.')) return;
-      r.entries=r.entries.filter(e=>String(e.id)!==String(entryId));
-      if(r.entries.length===0 && !r.lastAttended) delete state.contacts[memberId];
-      const ok=await saveFollowup();
-      if(!ok){alert('Could not save the deletion. Please try again.');return;}
-      fuCloseSheet(); renderFollowup(); showToast('Follow-up deleted');
-    });
-  });
-}
-
-function fuReportRange(period,anchorIso){
-  const d=new Date((anchorIso||todayISO())+'T00:00:00'); let start,end,label;
-  if(period==='week'){const monday=new Date(d);const off=(monday.getDay()+6)%7;monday.setDate(monday.getDate()-off);start=dateKey(monday);const sunday=new Date(monday);sunday.setDate(sunday.getDate()+6);end=dateKey(sunday);label='Week of '+fuFmtFull(start)+' – '+fuFmtFull(end);}
-  else if(period==='month'){start=dateKey(new Date(d.getFullYear(),d.getMonth(),1));end=dateKey(new Date(d.getFullYear(),d.getMonth()+1,0));label=d.toLocaleDateString(undefined,{month:'long',year:'numeric'});}
-  else{start=d.getFullYear()+'-01-01';end=d.getFullYear()+'-12-31';label=String(d.getFullYear());}
-  return {start,end,label};
-}
-function fuReportRows(period,anchorIso){
-  const range=fuReportRange(period,anchorIso),rows=[];
-  state.members.forEach(m=>fuContacts(m.id).forEach(e=>{if(e.date>=range.start&&e.date<=range.end)rows.push({m,e});}));
-  rows.sort((a,b)=>a.e.date<b.e.date?1:a.e.date>b.e.date?-1:String(a.m.name||'').localeCompare(String(b.m.name||'')));
-  return {range,rows};
-}
-function renderFollowupReport(){
-  const dateEl=document.getElementById('fuReportDate'); if(!dateEl)return; if(!dateEl.value)dateEl.value=todayISO();
-  const period=state.fuReportPeriod||'week',data=fuReportRows(period,dateEl.value);
-  document.getElementById('fuReportLabel').textContent=data.range.label+' · follow-ups recorded';
-  [['week','fuReportWeekBtn'],['month','fuReportMonthBtn'],['year','fuReportYearBtn']].forEach(([k,id])=>{const b=document.getElementById(id);b.classList.toggle('primary',period===k);b.classList.toggle('ghost',period!==k);});
-  const people=new Set(data.rows.map(x=>x.m.id)).size,replied=data.rows.filter(x=>x.e.replied).length,noReply=data.rows.filter(x=>!x.e.replied).length,visits=data.rows.filter(x=>x.e.method==='Visit').length;
-  document.getElementById('fuReportSummary').innerHTML='<div class="fu-report-stat"><b>'+data.rows.length+'</b><span>Follow-ups logged</span></div><div class="fu-report-stat"><b>'+people+'</b><span>People contacted</span></div><div class="fu-report-stat"><b>'+replied+'</b><span>Replies</span></div><div class="fu-report-stat"><b>'+noReply+'</b><span>No reply yet</span></div><div class="fu-report-stat"><b>'+visits+'</b><span>Visits</span></div>';
-  const size=25,totalPages=Math.max(1,Math.ceil(data.rows.length/size));state.fuReportPage=Math.min(Math.max(1,state.fuReportPage||1),totalPages);const start=(state.fuReportPage-1)*size,page=data.rows.slice(start,start+size);
-  document.getElementById('fuReportTbody').innerHTML=page.map(x=>'<tr><td>'+escapeHtml(fuFmtFull(x.e.date))+'</td><td>'+escapeHtml(x.m.name||'')+'</td><td>'+escapeHtml(x.m.ageGroup||x.m.group||'')+'</td><td>'+escapeHtml(x.e.method||'')+'</td><td>'+escapeHtml(x.e.replied?'Yes':'No')+(x.e.reply?' · '+escapeHtml(x.e.reply):'')+'</td><td>'+escapeHtml(x.e.prayer||'')+'</td><td>'+escapeHtml(x.e.next?fuFmtFull(x.e.next):'')+'</td></tr>').join('');
-  const pg=document.getElementById('fuReportPagination');pg.style.display=data.rows.length?'flex':'none';document.getElementById('fuReportPageInfo').textContent=data.rows.length?'Showing '+(start+1)+'–'+Math.min(start+size,data.rows.length)+' of '+data.rows.length:'';document.getElementById('fuReportPrevBtn').disabled=state.fuReportPage<=1;document.getElementById('fuReportNextBtn').disabled=state.fuReportPage>=totalPages;
 }
 
 function fuOpenLog(id){
@@ -2807,12 +2698,6 @@ function fuOpenPicker(){
 }
 
 document.getElementById('fuNewBtn').addEventListener('click', fuOpenPicker);
-document.getElementById('fuReportWeekBtn').addEventListener('click',()=>{state.fuReportPeriod='week';state.fuReportPage=1;renderFollowupReport();});
-document.getElementById('fuReportMonthBtn').addEventListener('click',()=>{state.fuReportPeriod='month';state.fuReportPage=1;renderFollowupReport();});
-document.getElementById('fuReportYearBtn').addEventListener('click',()=>{state.fuReportPeriod='year';state.fuReportPage=1;renderFollowupReport();});
-document.getElementById('fuReportDate').addEventListener('change',()=>{state.fuReportPage=1;renderFollowupReport();});
-document.getElementById('fuReportPrevBtn').addEventListener('click',()=>{state.fuReportPage=Math.max(1,(state.fuReportPage||1)-1);renderFollowupReport();});
-document.getElementById('fuReportNextBtn').addEventListener('click',()=>{state.fuReportPage=(state.fuReportPage||1)+1;renderFollowupReport();});
 
 function fuLastSunday(){ const d=new Date(); d.setDate(d.getDate()-d.getDay());
   return new Date(d.getTime()-d.getTimezoneOffset()*6e4).toISOString().slice(0,10); }
