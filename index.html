@@ -158,6 +158,11 @@
   .today-list .name{font-weight:600;color:var(--ink);}
   .today-list .time{margin-left:auto;font-size:12px;color:var(--ink-light);}
   .empty-note{color:var(--ink-light);font-size:13.5px;padding:14px 0;}
+  .members-summary{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;padding-top:18px;border-top:1px solid var(--line);}
+  .members-summary .sum-card{flex:1 1 110px;min-width:100px;background:var(--parchment);border:1px solid var(--line);padding:10px 12px;text-align:center;}
+  .members-summary .sum-card b{display:block;font-family:'Lora',serif;font-size:22px;color:var(--ink);line-height:1.1;}
+  .members-summary .sum-card span{display:block;font-size:11.5px;color:var(--ink-light);margin-top:3px;text-transform:uppercase;letter-spacing:.04em;}
+  .members-summary .sum-card.total{background:#fffdf8;border-color:var(--gold);}
 
   /* Enroll */
   .enroll-grid{display:grid;grid-template-columns:1fr 1fr;gap:28px;}
@@ -749,6 +754,7 @@
         <button type="button" class="ghost" id="membersNextBtn" style="padding:6px 14px;font-size:13px;">Next &raquo;</button>
       </div>
     </div>
+    <div class="members-summary" id="membersSummary"></div>
     </div>
   </section>
 
@@ -2161,6 +2167,23 @@ function memberSortValue(m, key){
   return String(m.name || '').toLowerCase();
 }
 
+// Headcount by age group across the whole roster (ignores search/filter/page).
+function renderMembersSummary(){
+  const el = document.getElementById('membersSummary');
+  if(!el) return;
+  const groups = ['Kids','Youth','Yamo','Men','Ladies'];
+  const counts = Object.fromEntries(groups.map(g=>[g,0]));
+  let other = 0;
+  state.members.forEach(m=>{
+    const g = m.ageGroup || m.group || '';
+    if(g in counts) counts[g]++; else other++;
+  });
+  const card = (label, n, cls='') => `<div class="sum-card ${cls}"><b>${n}</b><span>${escapeHtml(label)}</span></div>`;
+  el.innerHTML = groups.map(g=>card(g, counts[g])).join('')
+    + (other ? card('Other', other) : '')
+    + card('Total', state.members.length, 'total');
+}
+
 function renderMembers(){
   const q = document.getElementById('memberSearch').value.trim().toLowerCase();
   const faceFilter = document.getElementById('memberFaceFilter')?.value || 'all';
@@ -2204,6 +2227,7 @@ function renderMembers(){
   }
 
   document.getElementById('membersEmpty').style.display = state.members.length ? 'none':'block';
+  renderMembersSummary();
   tbody.innerHTML = pageItems.map(m=>`
     <tr>
       <td>${m.thumbnail ? `<img src="${m.thumbnail}" alt=""/>` : `<span class="fu-face-no" style="font-size:11px;">No face</span>`}</td>
