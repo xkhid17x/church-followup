@@ -2564,17 +2564,31 @@ async function loadReportForDate(dKey){
   });
 }
 function exportCsv(){
-  if(currentReportRecords.length===0){ return; }
+  if(currentReportRecords.length===0){ showToast('No attendance to export for this date.'); return; }
   const dKey = document.getElementById('reportDate').value;
   let csv = 'Date Attended,Service,Full Name,Contact Number,Address,Invited By,Age Group,Regular,Time\n';
   currentReportRecords.forEach(r=>{
     csv += `"${(r.dateAttended||dKey).replace(/"/g,'""')}","${(r.service||'').replace(/"/g,'""')}","${(r.name||'').replace(/"/g,'""')}","${(r.contact||'').replace(/"/g,'""')}","${(r.address||'').replace(/"/g,'""')}","${(r.invitedBy||'').replace(/"/g,'""')}","${(r.ageGroup||r.group||'').replace(/"/g,'""')}","${(r.regular||'Yes').replace(/"/g,'""')}","${fmtTime(r.time)}"\n`;
   });
-  const blob = new Blob([csv], {type:'text/csv'});
+  downloadText(csv, 'attendance-'+dKey+'.csv', 'text/csv;charset=utf-8');
+}
+
+// ---------- Shared download helper ----------
+// Several exports call this; it was never defined, so those buttons threw
+// "downloadText is not defined" and did nothing.
+function downloadText(text, filename, mime){
+  const isCsv = /csv/i.test(mime || '') || /\.csv$/i.test(filename || '');
+  // BOM so Excel opens accented/Filipino characters correctly.
+  const body = isCsv && text.charCodeAt(0) !== 0xFEFF ? '\ufeff' + text : text;
+  const blob = new Blob([body], {type: mime || 'text/plain;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'attendance-'+dKey+'.csv';
+  a.href = url;
+  a.download = filename;
+  a.style.display = 'none';
+  document.body.appendChild(a);
   a.click();
+  setTimeout(()=>{ a.remove(); URL.revokeObjectURL(url); }, 1000);
 }
 
 // ---------- Member export ----------
@@ -3073,7 +3087,7 @@ function exportFollowupCsv(){
     for(const e of fuContacts(m.id))
       rows.push([m.name, m.ageGroup||m.group||'', m.area||'', e.date, e.method, e.replied?'Yes':'No', e.reply||'', e.prayer||'', e.next||'', r.lastAttended||'']);
   }
-  const csv = rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\\r\\n');
+  const csv = rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\r\n');
   downloadText(csv, 'follow-ups-'+todayISO()+'.csv', 'text/csv;charset=utf-8');
 }
 
