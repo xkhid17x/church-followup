@@ -640,7 +640,8 @@
             <label><input type="radio" name="regular" value="No" /> No</label>
           </div>
         </div>
-        <button class="primary" id="saveMemberBtn" disabled>Save Member</button>
+        <button class="primary" id="saveMemberBtn">Save Member</button>
+        <div class="field-note" style="margin-top:8px;">A face is optional. You can register someone now and add their face later from Edit in the Directory.</div>
       </div>
     </div>
   </section>
@@ -1714,7 +1715,6 @@ document.getElementById('retakeBtn').addEventListener('click', ()=>{
   document.getElementById('captureBtn').style.display = 'inline-block';
   document.getElementById('uploadPhotoBtn').style.display = 'inline-block';
   document.getElementById('retakeBtn').style.display = 'none';
-  document.getElementById('saveMemberBtn').disabled = true;
   document.getElementById('enrollMsg').innerHTML = '';
 });
 
@@ -1731,10 +1731,7 @@ document.getElementById('saveMemberBtn').addEventListener('click', async ()=>{
     msgEl.innerHTML = '<div class="msg err">Enter a name before saving.</div>';
     return;
   }
-  if(!state.pendingCapture){
-    msgEl.innerHTML = '<div class="msg err">Capture a face first.</div>';
-    return;
-  }
+  const capture = state.pendingCapture; // optional: null when registering without a face
   const btn = document.getElementById('saveMemberBtn');
   btn.disabled = true;
 
@@ -1743,6 +1740,11 @@ document.getElementById('saveMemberBtn').addEventListener('click', async ()=>{
   const existing = state.members.find(m=>normalizedName(m.name)===normalizedName(name));
   let member, wasNew, previous;
   if(existing){
+    if(!capture){
+      msgEl.innerHTML = `<div class="msg err">${escapeHtml(existing.name)} is already registered. Use Edit in the Directory to change their details or add a face.</div>`;
+      btn.disabled = false;
+      return;
+    }
     if(existing.descriptor){
       msgEl.innerHTML = `<div class="msg err">${escapeHtml(existing.name)} already has a face enrolled. Use Members to remove it first if you need to re-enroll.</div>`;
       btn.disabled = false;
@@ -1754,17 +1756,18 @@ document.getElementById('saveMemberBtn').addEventListener('click', async ()=>{
     member.address = address || member.address;
     member.invitedBy = invitedBy || member.invitedBy;
     member.ageGroup = ageGroup; member.group = group; member.regular = regular;
-    member.descriptor = state.pendingCapture.descriptor;
-    member.thumbnail = state.pendingCapture.thumbnail;
+    member.descriptor = capture.descriptor;
+    member.thumbnail = capture.thumbnail;
     member.enrolledAt = new Date().toISOString();
     wasNew = false;
   } else {
     member = {
       id: (crypto.randomUUID ? crypto.randomUUID() : 'm-'+Date.now()+'-'+Math.random().toString(36).slice(2)),
       name, group, contact, address, invitedBy, ageGroup, regular, fromRoster: false,
-      descriptor: state.pendingCapture.descriptor,
-      thumbnail: state.pendingCapture.thumbnail,
-      enrolledAt: new Date().toISOString(),
+      descriptor: capture ? capture.descriptor : null,
+      thumbnail: capture ? capture.thumbnail : '',
+      enrolledAt: capture ? new Date().toISOString() : null,
+      registeredAt: new Date().toISOString(),
     };
     state.members.push(member);
     wasNew = true;
@@ -1777,7 +1780,7 @@ document.getElementById('saveMemberBtn').addEventListener('click', async ()=>{
     return;
   }
   rebuildMatcher();
-  msgEl.innerHTML = `<div class="msg ok">${escapeHtml(member.name)} enrolled.</div>`;
+  msgEl.innerHTML = `<div class="msg ok">${escapeHtml(member.name)} ${capture ? 'enrolled.' : 'registered without a face. Add their face later from Edit in the Directory.'}</div>`;
   document.getElementById('nameInput').value = '';
   document.getElementById('contactInput').value = '';
   document.getElementById('addressInput').value = '';
@@ -1788,7 +1791,7 @@ document.getElementById('saveMemberBtn').addEventListener('click', async ()=>{
   document.getElementById('captureBtn').style.display = 'inline-block';
   document.getElementById('uploadPhotoBtn').style.display = 'inline-block';
   document.getElementById('retakeBtn').style.display = 'none';
-  document.getElementById('saveMemberBtn').disabled = true;
+  document.getElementById('saveMemberBtn').disabled = false;
   state.pendingCapture = null;
 });
 
