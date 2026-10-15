@@ -596,8 +596,11 @@
         </div>
         <div class="capture-row">
           <button class="primary" id="captureBtn" disabled>Loading recognition…</button>
-          <button class="ghost" id="retakeBtn" style="display:none;">Retake</button>
+          <button class="ghost" id="uploadPhotoBtn" type="button">Upload photo instead</button>
+          <button class="ghost" id="retakeBtn" style="display:none;">Retake / change photo</button>
+          <input type="file" id="enrollPhotoInput" accept="image/*" style="display:none;">
         </div>
+        <div class="field-note" style="margin-top:8px;">No camera? Choose a clear, front-facing photo with one visible face.</div>
         <div id="enrollMsg"></div>
       </div>
       <div>
@@ -932,6 +935,8 @@ const state = {
   attendanceToday: [],
   checkinStream: null,
   enrollStream: null,
+  enrollCameraGen: 0,
+  enrollCameraStarting: false,
   pendingCapture: null, // {descriptor, thumbnail}
   scanTimer: null,
   bulkFiles: [],
@@ -1010,6 +1015,9 @@ document.querySelectorAll('.subtabs button').forEach(btn=>{
   btn.addEventListener('click', ()=> switchMemberSubtab(btn.dataset.subtab));
 });
 function stopEnrollCamera(){
+  // Invalidate any camera request still waiting on getUserMedia so it stops
+  // itself on arrival instead of attaching a stream nobody can see or stop.
+  state.enrollCameraGen++;
   if(state.enrollStream){
     state.enrollStream.getTracks().forEach(t=>t.stop());
     state.enrollStream = null;
@@ -1291,19 +1299,30 @@ if(resSelect){
 
 async function ensureEnrollCamera(){
   const video = document.getElementById('enrollVideo');
-  if(state.enrollStream){ return; }
+  if(state.enrollStream || state.enrollCameraStarting){ return; }
   if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
-    document.getElementById('enrollMsg').innerHTML = '<div class="msg err">Camera requires Chrome on localhost or HTTPS. Use the Start Church Attendance file.</div>';
+    document.getElementById('enrollMsg').innerHTML = '<div class="msg err">Camera requires HTTPS or localhost. You can still use Upload photo instead.</div>';
     return;
   }
+  const gen = ++state.enrollCameraGen;
+  state.enrollCameraStarting = true;
   try{
     const stream = await navigator.mediaDevices.getUserMedia({video:{width:480,height:480}, audio:false});
+    if(gen !== state.enrollCameraGen){
+      // The person left the Enroll tab while the camera was starting.
+      stream.getTracks().forEach(t=>t.stop());
+      return;
+    }
     state.enrollStream = stream;
     video.srcObject = stream;
     await video.play().catch(()=>{});
   }catch(e){
     console.error('Enrollment camera error:', e);
-    document.getElementById('enrollMsg').innerHTML = '<div class="msg err">Camera access denied — allow camera permission and reload.</div>';
+    if(gen === state.enrollCameraGen){
+      document.getElementById('enrollMsg').innerHTML = '<div class="msg err">Camera not available — allow camera permission, or use Upload photo instead.</div>';
+    }
+  }finally{
+    state.enrollCameraStarting = false;
   }
 }
 
@@ -1683,6 +1702,7 @@ document.getElementById('captureBtn').addEventListener('click', async ()=>{
   document.getElementById('previewThumb').src = thumbnail;
   document.getElementById('previewThumb').style.display = 'block';
   document.getElementById('captureBtn').style.display = 'none';
+  document.getElementById('uploadPhotoBtn').style.display = 'none';
   document.getElementById('retakeBtn').style.display = 'inline-block';
   document.getElementById('saveMemberBtn').disabled = false;
   msgEl.innerHTML = '<div class="msg ok">Face captured. Enter a name and save.</div>';
@@ -1692,6 +1712,7 @@ document.getElementById('retakeBtn').addEventListener('click', ()=>{
   state.pendingCapture = null;
   document.getElementById('previewThumb').style.display = 'none';
   document.getElementById('captureBtn').style.display = 'inline-block';
+  document.getElementById('uploadPhotoBtn').style.display = 'inline-block';
   document.getElementById('retakeBtn').style.display = 'none';
   document.getElementById('saveMemberBtn').disabled = true;
   document.getElementById('enrollMsg').innerHTML = '';
@@ -1765,8 +1786,87 @@ document.getElementById('saveMemberBtn').addEventListener('click', async ()=>{
   document.querySelector('input[name="regular"][value="Yes"]').checked = true;
   document.getElementById('previewThumb').style.display = 'none';
   document.getElementById('captureBtn').style.display = 'inline-block';
+  document.getElementById('uploadPhotoBtn').style.display = 'inline-block';
   document.getElementById('retakeBtn').style.display = 'none';
+  document.getElementById('saveMemberBtn').disabled = true;
   state.pendingCapture = null;
+});
+
+// ---- Register a new member from an uploaded photo (no camera needed) ----
+// Crops a square thumbnail around the detected face, with some margin, so
+// full-body or group-ish photos still give a recognisable avatar.
+function makeFaceThumbnail(img, box){
+  const size = 160;
+  const pad = 0.35;
+  const side = Math.max(box.width, box.height) * (1 + pad*2);
+  const cx = box.x + box.width/2, cy = box.y + box.height/2;
+  let sx = cx - side/2, sy = cy - side/2, sw = side, sh = side;
+  // keep the crop inside the image
+  sx = Math.max(0, Math.min(sx, img.naturalWidth - sw));
+  sy = Math.max(0, Math.min(sy, img.naturalHeight - sh));
+  sw = Math.min(sw, img.naturalWidth); sh = Math.min(sh, img.naturalHeight);
+  const canvas = document.createElement('canvas');
+  canvas.width = size; canvas.height = size;
+  canvas.getContext('2d').drawImage(img, sx, sy, sw, sh, 0, 0, size, size);
+  return canvas.toDataURL('image/jpeg', 0.72);
+}
+
+document.getElementById('uploadPhotoBtn').addEventListener('click', ()=>{
+  const msgEl = document.getElementById('enrollMsg');
+  if(!state.modelsLoaded){
+    msgEl.innerHTML = '<div class="msg err">Recognition models are still loading. Wait a moment and try again.</div>';
+    return;
+  }
+  document.getElementById('enrollPhotoInput').click();
+});
+
+document.getElementById('enrollPhotoInput').addEventListener('change', async e=>{
+  const file = e.target.files && e.target.files[0];
+  e.target.value = '';
+  if(!file) return;
+  const msgEl = document.getElementById('enrollMsg');
+
+  if(file.type && !file.type.startsWith('image/')){
+    msgEl.innerHTML = '<div class="msg err">That file is not an image. Choose a JPG or PNG photo.</div>';
+    return;
+  }
+  msgEl.innerHTML = '<div class="msg">Reading photo…</div>';
+
+  let img;
+  try{ img = await loadImageFromFile(file); }
+  catch(err){ msgEl.innerHTML = '<div class="msg err">'+escapeHtml(err.message||'The image could not be opened.')+'</div>'; return; }
+
+  if(img.naturalWidth < 100 || img.naturalHeight < 100){
+    msgEl.innerHTML = '<div class="msg err">Image is too small. Use a larger photo.</div>';
+    return;
+  }
+
+  msgEl.innerHTML = '<div class="msg">Detecting face…</div>';
+  let detection;
+  try{
+    detection = await faceapi.detectSingleFace(img, DETECT_OPTS()).withFaceLandmarks().withFaceDescriptor();
+  }catch(err){
+    msgEl.innerHTML = '<div class="msg err">Face detection failed: '+escapeHtml(err.message||'unknown error')+'</div>';
+    return;
+  }
+  if(!detection){
+    msgEl.innerHTML = '<div class="msg err">No face detected. Use a clear, front-facing photo with one visible face.</div>';
+    return;
+  }
+
+  const thumbnail = makeFaceThumbnail(img, detection.detection.box);
+  state.pendingCapture = {
+    descriptor: Array.from(detection.descriptor).map(x=>Math.round(x*10000)/10000),
+    thumbnail,
+  };
+  const prev = document.getElementById('previewThumb');
+  prev.src = thumbnail;
+  prev.style.display = 'block';
+  document.getElementById('captureBtn').style.display = 'none';
+  document.getElementById('uploadPhotoBtn').style.display = 'none';
+  document.getElementById('retakeBtn').style.display = 'inline-block';
+  document.getElementById('saveMemberBtn').disabled = false;
+  msgEl.innerHTML = '<div class="msg ok">Face read from photo. Fill in the details and save.</div>';
 });
 
 
